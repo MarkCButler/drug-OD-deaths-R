@@ -53,6 +53,7 @@ summary.tab <-  tabItem(
     )
 )
 
+time.periods = paste('September', seq(from = 2015, to = 2019))
 map.tab <- tabItem(
     tabName = 'map',
     fluidRow(
@@ -70,8 +71,8 @@ map.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            selectizeInput(inputId = 'map.category',
-                           label = 'Select data category to display',
+            selectizeInput(inputId = 'map.type',
+                           label = 'Select type of data to display',
                            choices = c('Number of deaths',
                                        'Number of deaths per 100,000 population',
                                        'Percent change during one year'))
@@ -82,7 +83,8 @@ map.tab <- tabItem(
             width = 12,
             selectizeInput(inputId = 'period',
                            label = 'Twelve-month period ending',
-                           choices = NULL)
+                           choices = time.periods,
+                           selected = time.periods[length(time.periods)] )
         )
     ),
     br(),
@@ -106,8 +108,18 @@ time.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
+            selectizeInput(inputId = 'time.type',
+                           label = 'Select type of data to display',
+                           choices = c('Number of deaths',
+                                       'Number of deaths per 100,000 population',
+                                       'Percent change during one year'))
+        )
+    ),
+    fluidRow(
+        column(
+            width = 12,
             selectizeInput(inputId = 'drug',
-                           label = 'Select one or more categories to display',
+                           label = 'Select one or more curves to display',
                            choices = NULL,
                            multiple = T)
         )
@@ -128,7 +140,8 @@ time.tab <- tabItem(
             offset = 6,
             selectizeInput(inputId = 'state',
                            label = 'State',
-                           choices = NULL)
+                           choices = state.name,
+                           selected = 'Texas')
         )
     ),
     br(),
