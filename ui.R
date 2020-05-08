@@ -91,8 +91,9 @@ map.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            p('Technical note:  Because of variations in reporting by different states, ',
-              'death rates involving specific drugs are not compared between states .')
+            p('Because of variations in reporting by different states, ',
+              'death rates involving specific drug categories are not compared between states.',
+              'The only comparison made between states is the total number of drug-overdose deaths.')
         )
     ),
 )
@@ -148,8 +149,10 @@ time.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            p('Technical note:  Because of gaps in reporting, time-series data for certain states ',
-              'may be missing or incomplete.')
+            p('Due to low data quality, the death count ',
+              'was not reported for certain combinations of month, year, state, and drug category.  ',
+              'In plots showing time-development, the data values that gave rise to the plot are ',
+              'therefore shown as dots.')
         )
     ),
 )
@@ -188,15 +191,81 @@ notes.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            h2('Data limitations')
+            h1('Technical notes')
+        ),
+    ),
+    fluidRow(
+        column(
+            width = 12,
+            h4('Data for drug-overdose deaths')
+        )
+    ),
+    fluidRow(
+        column(
+            width = 10,
+            tags$ul(
+                tags$li(HTML(
+                    'The death counts are provisional values given by ',
+                    'the Vital Statistics Rapid Release program of the US government.'
+                )),
+                tags$li(HTML(
+                    'Provisional counts of drug-overdose deaths are reported with a lag time ',
+                    'of six months following the date of death.'
+                )),
+                tags$li(HTML(
+                    'The death count listed for a given month represents the number of deaths ',
+                    'occuring during the preceding 12-month period.  As a result, the death count ',
+                    'does not show seasonal variation.'
+                )),
+                tags$li(HTML(
+                    'Due to low data quality, the death count ',
+                    'was not reported for certain combinations of month, year, state, and drug category.  ',
+                    'In plots showing time-development, the data values that gave rise to the plot are ',
+                    'therefore shown as dots.'
+                )),
+                tags$li(HTML(
+                    'Because of variations in reporting by different states, death rates involving ',
+                    'specific drug categories are not compared between states.  The only comparison made ',
+                    'between states is the total number of drug-overdose deaths.'
+                )),
+                tags$li(HTML(
+                    'The "Indicator" column of the raw data includes cause-of-death codes from ',
+                    'the Tenth Revision of the International Statistical Classification of Diseases ',
+                    'and Related Health Problems.  (The raw data an be viewed by clicking the "Data" tab ',
+                    'of the sidebar.)'
+                )),
+                tags$li(
+                    'Additional information regarding the data for drug-overdose deaths is available at ',
+                    a(href = data.source.deaths, data.source.deaths)
+                )
+            )
         )
     ),
     fluidRow(
         column(
             width = 12,
-            h2('Data processing')
+            h4('Population data')
         )
-    )
+    ),
+    fluidRow(
+        column(
+            width = 10,
+            tags$ul(
+                tags$li(HTML(
+                    'Annual population estimates (dated July 1) are given by the ',
+                    'US Census Bureau.'
+                )),
+                tags$li(HTML(
+                    'For plots showing number of deaths per 100,000 population, linear interpolation ',
+                    'is used to obtain population estimates that do not have an abrupt change in July.'
+                )),
+                tags$li(
+                    'Additional information regarding the annual population estimates is available at ',
+                    a(href = data.source.pop, data.source.pop)
+                ),
+            )
+        )
+    ),
 )
 #####################################################
 # Define the dashboard body and create the dashboard
