@@ -228,12 +228,15 @@ notes.tab <- tabItem(
                     'specific drug categories are not compared between states.  The only comparison made ',
                     'between states is the total number of drug-overdose deaths.'
                 )),
-                tags$li(HTML(
-                    'The "Indicator" column of the raw data includes cause-of-death codes from ',
-                    'the Tenth Revision of the International Statistical Classification of Diseases ',
-                    'and Related Health Problems.  (The raw data an be viewed by clicking the "Data" tab ',
-                    'of the sidebar.)'
-                )),
+                tags$li(
+                    HTML(
+                        'The data includes cause-of-death codes from ICD–10, ',
+                        'the Tenth Revision of the International Statistical Classification of Diseases ',
+                        'and Related Health Problems.  The correspondence between plot labels and ',
+                        'ICD-10 codes is as follows:'
+                    ),
+                    tableOutput('code.table')
+                ),
                 tags$li(
                     'Additional information regarding the data for drug-overdose deaths is available at ',
                     a(href = data.source.deaths, data.source.deaths)
@@ -267,6 +270,7 @@ notes.tab <- tabItem(
         )
     ),
 )
+
 #####################################################
 # Define the dashboard body and create the dashboard
 #####################################################
