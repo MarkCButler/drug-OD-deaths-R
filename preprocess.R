@@ -2,6 +2,9 @@ library(dplyr)
 library(RSQLite)
 library(stringr)
 
+###############################################################################
+# Bring the variables population.csv, db.name, table.name, and curve.labels
+# into the current namespace.
 source('./global.R')
 
 # The code in this file was run only once.  It does preprocessing to generate
@@ -14,7 +17,6 @@ source('./global.R')
 # preprocessing, but there's no reason to have it repeated each time the app
 # runs, while the user is waiting for the app to start.
 
-population.csv <- './data/population.csv'
 population <- read.csv(population.csv, row.names = 1)
 
 # Replace the row names with abbreviations without assuming a particular order
@@ -87,9 +89,7 @@ deaths.df <- arrange(deaths.df, State, Year, match(Month, month.name), Indicator
 ###############################################################################
 # Create sqlite database.
 
-db.name <- './data/deaths.sqlite'
-table.name <- 'deaths'
-conn <- dbConnect(drv = SQLite(), dbname = db.name)
+conn <- dbConnect(SQLite(), db.name)
 dbWriteTable(conn = conn,
              name = table.name,
              value = deaths.df)

@@ -23,5 +23,10 @@ codes <- c('T40.0-T40.4, T40.6',
 code.table <- data.frame(label = code.label, codes)
 
 server <- function(input, output, session) {
+
+    # Render static table for technical notes.
     output$code.table = renderTable({code.table})
+
+    # Connect to database.
+    conn <- get.managed.connection(session, db.name)
 }

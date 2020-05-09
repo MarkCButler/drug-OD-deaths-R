@@ -1,5 +1,11 @@
+###############################################################################
+# Bring the variables population.csv into the current namespace.
+source('./global.R')
+
+###############################################################################
 # In the data on deaths by drug OD, dates are given in the format 'January 2015'.
 # Define a function for converting this format to a Date object.
+
 convert.to.Date <- function(month.year) {
     date.object <-  as.Date(paste('01', month.year),
                            format = '%d %B %Y')
@@ -8,14 +14,13 @@ convert.to.Date <- function(month.year) {
 
 ###############################################################################
 # Define a function for finding interpolated populations.  
-###############################################################################
 
 # The population.csv file was created by first manually modifying the .xlsx file
 # downloaded from www.census.gov to create a csv file and then doing
 # preprocessing with the script preprocess.R written for this app.  The csv file
 # contains population estimates for the US and each of the 50 states.  For each
 # of the years 2014 - 2019, there is an estimate of the population on July 1.
-population <- read.csv('./data/population.csv', row.names = 1)
+population <- read.csv(population.csv, row.names = 1)
 
 # First lapply is used to define one function for each row of the population
 # data frame.  Then a single function is defined to do the interpolation given a
