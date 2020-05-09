@@ -121,7 +121,7 @@ time.tab <- tabItem(
             width = 12,
             selectizeInput(inputId = 'drug',
                            label = 'Select one or more curves to display',
-                           choices = NULL,
+                           choices = curve.labels,
                            multiple = T)
         )
     ),

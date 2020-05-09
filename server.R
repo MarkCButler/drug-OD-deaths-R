@@ -10,7 +10,7 @@ source('./time_series.R')
 # rendered by the server.
 code.label <- c('All opioids',
                 'Heroin',
-                'Prescription opioids',
+                'Prescription opioid pain relievers',
                 'Fentanyl and synthetic opioids',
                 'Cocaine',
                 'Methamphetamine and other psychostimulants')
