@@ -28,5 +28,5 @@ server <- function(input, output, session) {
     output$code.table = renderTable({code.table})
 
     # Connect to database.
-    conn <- get.managed.connection(session, db.name)
+    conn <- get.managed.connection(session)
 }
