@@ -61,13 +61,13 @@ paste()
 #
 # The labels are elements of the vector short.curve.labels defined in global.R.
 label <- case_when(
-    str_detect(deaths.df$Indicator, 'T40.0') ~ 'all.opioid',
+    str_detect(deaths.df$Indicator, 'T40.0') ~ 'all.opioids',
     str_detect(deaths.df$Indicator, 'T40.1') ~ 'heroin',
-    str_detect(deaths.df$Indicator, 'T40.2') ~ 'prescription.opioid',
-    str_detect(deaths.df$Indicator, 'T40.[34]') ~ 'synthetic.opioid',
+    str_detect(deaths.df$Indicator, 'T40.2') ~ 'prescription.opioids',
+    str_detect(deaths.df$Indicator, 'T40.[34]') ~ 'synthetic.opioids',
     str_detect(deaths.df$Indicator, 'T40.5') ~ 'cocaine',
-    str_detect(deaths.df$Indicator, 'T43') ~ 'meth',
-    str_detect(deaths.df$Indicator, 'Drug Overdose') ~ 'all.OD'
+    str_detect(deaths.df$Indicator, 'T43') ~ 'other.stimulants',
+    str_detect(deaths.df$Indicator, 'Drug Overdose') ~ 'all.drug.OD'
 )
 
 deaths.df <- mutate(deaths.df, Label = label)

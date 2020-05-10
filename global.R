@@ -10,20 +10,20 @@ table.name <- 'deaths'
 # data base, as well as for referring to curves in the code.  The long curve
 # labels are displayed in the interface and in the plots--these may change as
 # the plots are tweaked.
-short.curve.labels <- c('all.OD',
-                        'all.opioid',
-                        'prescription.opioid',
-                        'synthetic.opioid',
+short.curve.labels <- c('all.drug.OD',
+                        'all.opioids',
+                        'prescription.opioids',
+                        'synthetic.opioids',
                         'heroin',
                         'cocaine',
-                        'meth')
+                        'other.stimulants')
 long.curve.labels <- c('All drug overdose deaths',
                        'All opioids',
                        'Prescription opioid pain relievers',
                        'Fentanyl and other synthetic opioids',
                        'Heroin',
                        'Cocaine',
-                       'Methamphetamine and other psychostimulants')
+                       'Methamphetamine and other stimulants')
 
 # When a vector of choices is passed to selectizeInput in the user interface,
 # it is the element names rather than the elements themselves that are
