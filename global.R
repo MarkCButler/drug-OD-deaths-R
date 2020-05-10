@@ -6,11 +6,27 @@ population.csv <- './data/population.csv'
 db.name <- './data/deaths.sqlite'
 table.name <- 'deaths'
 
-# Labels for plotted curves.
-curve.labels <- c('All drug overdose deaths',
-                  'All opioids',
-                  'Prescription opioid pain relievers',
-                  'Fentanyl and other synthetic opioids',
-                  'Heroin',
-                  'Cocaine',
-                  'Methamphetamine and other psychostimulants')
+# Labels for plotted curves.  The short curve labels are for storing in the
+# data base, as well as for referring to curves in the code.  The long curve
+# labels are displayed in the interface and in the plots--these may change as
+# the plots are tweaked.
+short.curve.labels <- c('all.OD',
+                        'all.opioid',
+                        'prescription.opioid',
+                        'synthetic.opioid',
+                        'heroin',
+                        'cocaine',
+                        'meth')
+long.curve.labels <- c('All drug overdose deaths',
+                       'All opioids',
+                       'Prescription opioid pain relievers',
+                       'Fentanyl and other synthetic opioids',
+                       'Heroin',
+                       'Cocaine',
+                       'Methamphetamine and other psychostimulants')
+
+# When a vector of choices is passed to selectizeInput in the user interface,
+# it is the element names rather than the elements themselves that are
+# displayed.  Because of this, it is convenient to use the long curve labels
+# as names for the vector short.curve.labels.
+names(short.curve.labels) <- long.curve.labels
