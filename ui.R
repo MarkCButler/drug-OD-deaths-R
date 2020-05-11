@@ -73,9 +73,7 @@ map.tab <- tabItem(
             width = 12,
             selectizeInput(inputId = 'map.type',
                            label = 'Select type of data to display',
-                           choices = c('Number of deaths',
-                                       'Number of deaths per 100,000 population',
-                                       'Percent change during one year'))
+                           choices = statistic.labels)
         )
     ),
     fluidRow(
@@ -111,9 +109,7 @@ time.tab <- tabItem(
             width = 12,
             selectizeInput(inputId = 'time.type',
                            label = 'Select type of data to display',
-                           choices = c('Number of deaths',
-                                       'Number of deaths per 100,000 population',
-                                       'Percent change during one year'))
+                           choices = statistic.labels)
         )
     ),
     fluidRow(
@@ -121,7 +117,7 @@ time.tab <- tabItem(
             width = 12,
             selectizeInput(inputId = 'drug',
                            label = 'Select one or more curves to display',
-                           choices = curve.labels,
+                           choices = short.curve.labels,
                            multiple = T)
         )
     ),
