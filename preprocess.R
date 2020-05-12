@@ -3,7 +3,8 @@ library(RSQLite)
 library(stringr)
 
 ###############################################################################
-# Bring the variables population.csv, db.name, and table.name into the current
+# Bring the variables population.csv, db.name, table.name,
+# named.state.abbreviations, and ordered.abbreviations into the current
 # namespace.
 source('./global.R')
 
@@ -13,17 +14,23 @@ source('./global.R')
 ###############################################################################
 # The population.csv file loaded here was created by manually modifying the
 # .xlsx file downloaded from www.census.gov.  The preprocessing done here
-# converts state names to state abbreviations.  This is fairly trivial
-# preprocessing, but there's no reason to have it repeated each time the app
-# runs, while the user is waiting for the app to start.
+# converts state names to state abbreviations, which are used consistently
+# within data frames in the app.  For display of the data frame, the rows are
+# also reordered alphabetically based on the state abbreviation.  (The US data
+# is kept at the top of the data frame.)
 
-population <- read.csv(population.csv, row.names = 1)
+population <- read.csv(population.csv, row.names = 1, check.names = F)
 
 # Replace the row names with abbreviations without assuming a particular order
 # for the row names.  The first row name is excluded because it is 'US'.
 state.row.names <- rownames(population)[-1]
-named.state.abb <- setNames(state.abb, state.name)
-rownames(population)[-1] <- named.state.abb[state.row.names]
+rownames(population)[-1] <- named.state.abbreviations[state.row.names]
+
+# Reorder the rows for display in the data tab of the user interface.  The
+# vector ordered.abbreviations has 'US' first and then an alphabetical listing
+# of state abbreviations.
+population <- population[match(rownames(population), ordered.abbreviations), ]
+
 write.csv(population, population.csv)
 
 ###############################################################################
@@ -45,10 +52,10 @@ deaths.df <- select(deaths.df, State, Year, Month, Indicator, Data.Value) %>%
         !(State %in% c('DC', 'YC')),
         !is.na(Value)
     )
-paste()
+
 # Next add a label column to simplify data analysis.  This column will not be
 # shown in the Data tab of the app, which displays only the raw data.
-
+#
 # In the following command, which creates a vector of labels based on  the
 # Indicator column, the order of the case statements is significant.  For
 # instance, the indicator
@@ -72,10 +79,14 @@ label <- case_when(
 
 deaths.df <- mutate(deaths.df, Label = label)
 
-# Order the rows, for convenience in checking deaths.df.  The call to match
-# returns the month number corresponding to the month name, e.g. 1 for
+# Order the rows, for convenience in checking deaths.df.  The second call to
+# match returns the month number corresponding to the month name, e.g. 1 for
 # 'January'.  A similar call is used in displaying raw data in the app.
-deaths.df <- arrange(deaths.df, State, Year, match(Month, month.name), Indicator)
+deaths.df <- arrange(deaths.df,
+                     match(State, ordered.abbreviations),
+                     Year,
+                     match(Month, month.name),
+                     Indicator)
 
 ###############################################################################
 # Create sqlite database.

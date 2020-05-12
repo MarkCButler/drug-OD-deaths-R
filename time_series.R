@@ -13,18 +13,18 @@ convert.to.Date <- function(month.year) {
 }
 
 ###############################################################################
-# Define a function for finding interpolated populations.  
+# Define a function for finding interpolated populations.
 
 # The population.csv file was created by first manually modifying the .xlsx file
 # downloaded from www.census.gov to create a csv file and then doing
 # preprocessing with the script preprocess.R written for this app.  The csv file
 # contains population estimates for the US and each of the 50 states.  For each
 # of the years 2014 - 2019, there is an estimate of the population on July 1.
-population <- read.csv(population.csv, row.names = 1)
+population <- read.csv(population.csv, row.names = 1, check.names = F)
 
 # First lapply is used to define one function for each row of the population
-# data frame.  Then a single function is defined to do the interpolation given a
-# region and a vector Date objects.
+# data frame.  Then a single function is defined to do the interpolation given
+# a state abbreviation (or 'US') together with a vector Date objects.
 #
 # Note that this interpolation is needed primarily for time-series plots that
 # show number of deaths per 100,000 population.  The interpolation avoids
@@ -32,15 +32,15 @@ population <- read.csv(population.csv, row.names = 1)
 population.dates = convert.to.Date(
     paste('July', seq(from = 2014, to = 2019))
 )
-get.interp.function <- function(region) {
+get.interp.function <- function(state) {
    approxfun(x = population.dates,
-             y = as.numeric(population[region,]),
+             y = as.numeric(population[state,]),
              method = 'linear',
-             rule = 2) 
+             rule = 2)
 }
 interp.functions <- lapply(rownames(population), get.interp.function)
 names(interp.functions) <- rownames(population)
-get.population <- function(region, dates) {
-    population.estimates <- interp.functions[[region]](dates)
+get.population <- function(state, dates) {
+    population.estimates <- interp.functions[[state]](dates)
     return(population.estimates)
 }

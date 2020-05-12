@@ -137,7 +137,7 @@ time.tab <- tabItem(
             offset = 6,
             selectizeInput(inputId = 'state',
                            label = 'State',
-                           choices = state.name,
+                           choices = state.labels,
                            selected = 'Texas')
         )
     ),
@@ -158,17 +158,15 @@ data.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            selectizeInput(inputId = 'data.source',
+            selectizeInput(inputId = 'dataset',
                            label = 'Data source',
-                           choices = c('Drug OD deaths', 'Annual state populations')),
+                           choices = dataset.labels),
         )
     ),
     fluidRow(
-        column(
-            width = 12,
-            h2('Place holder for displayed table')
-        )
-    ),
+        box(width = 12,
+            DT::dataTableOutput('table'))
+        ),
     br(),
     fluidRow(
         column(
@@ -176,7 +174,7 @@ data.tab <- tabItem(
             h4('Data sources'),
             p('Drug OD deaths: ',
               a(href = data.source.deaths, data.source.deaths)),
-            p('Annual state populations:  ',
+            p('Annual populations:  ',
               a(href = data.source.pop, data.source.pop))
         )
     )
