@@ -1,5 +1,7 @@
 library(RSQLite)
 
+# This file defines functions for accessing the app's sqlite database.
+
 ###############################################################################
 # Bring the variables db.name and table.name into the current namespace.
 source('./global.R')
@@ -46,28 +48,11 @@ get.map.data <- function(conn, year, month) {
     return(result)
 }
 
-get.time.data <- function(conn, state, labels) {
-    # The argument 'labels' to the current function is a vector of unknown
-    # length.  The tools available for parameterized queries in RSQLite cannot
-    # insert a vector of parameter placeholders into a single query string.
-    # We therefore create a string containing a parameter placeholder for each
-    # element of the labels vector.
-    #
-    # For example, the string label.placeholder defined below is
-    #
-    # ":label1, :label2"
-    #
-    # in the case where labels vector has two elements.
-    label.placeholders <- paste0(':label', seq(length(labels)), collapse = ', ')
+get.time.data <- function(conn, state) {
     query <- paste('SELECT State, Year, Month, Label, Value',
                   'FROM', table.name,
-                  'WHERE State = :state AND Label IN (', label.placeholders, ')')
-
-    # Construct the list of named parameter values for the query.
-    label.names <- paste0('label', seq(length(labels)))
-    names(labels) <- label.names
-    query.parameters <- as.list(append(c(state = state), labels))
-
+                  'WHERE State = :state')
+    query.parameters = list(state = state)
     result = execute.parameterized.query(conn, query, query.parameters)
     return(result)
 }
