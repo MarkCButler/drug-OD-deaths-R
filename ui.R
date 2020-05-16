@@ -131,7 +131,7 @@ time.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            selectizeInput(inputId = 'drug',
+            selectizeInput(inputId = 'category',
                            label = 'Select one or more categories to display',
                            choices = short.curve.labels,
                            multiple = T,
