@@ -57,7 +57,7 @@ label <- case_when(
 deaths.df <- mutate(deaths.df, Label = label)
 
 # Convert state abbreviations (and also 'US') to full names.  Note that the
-# vector state.labels is defined in global.R as 
+# vector state.labels is defined in global.R as
 #
 # state.labels <- append(c('United States'), state.name)
 names(state.labels) <- append(c('US'), state.abb)

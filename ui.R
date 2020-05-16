@@ -82,7 +82,7 @@ map.tab <- tabItem(
             selectizeInput(inputId = 'period',
                            label = 'Select the twelve-month period ending',
                            choices = time.periods,
-                           selected = time.periods[length(time.periods)] )
+                           selected = time.periods[length(time.periods)])
         )
     ),
     fluidRow(

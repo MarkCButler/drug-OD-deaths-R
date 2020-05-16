@@ -3,7 +3,7 @@
 # spurious jumps in time-series plots.
 
 ###############################################################################
-# Bring the variable population.csv and the function convert.to.Date into the
+# Bring the variable population.csv and the function convert.to.date into the
 # current namespace.
 source('./global.R')
 
@@ -24,12 +24,12 @@ population <- read.csv(population.csv, row.names = 1, check.names = F)
 # Note that this interpolation is needed primarily for time-series plots that
 # show number of deaths per 100,000 population.  The interpolation avoids
 # spurious jumps in such plots.
-population.dates = convert.to.Date(
+population.dates <- convert.to.date(
     paste('July', seq(from = 2014, to = 2019))
 )
 get.interp.function <- function(state) {
    approxfun(x = population.dates,
-             y = as.numeric(population[state,]),
+             y = as.numeric(population[state, ]),
              method = 'linear',
              rule = 2)
 }

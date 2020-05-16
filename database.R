@@ -31,7 +31,7 @@ get.raw.data <- function(conn) {
 }
 
 # Helper function called after a parameterized query has been defined.
-execute.parameterized.query = function(conn, query, query.parameters) {
+execute.parameterized.query <- function(conn, query, query.parameters) {
     submitted.query <- dbSendQuery(conn, query)
     dbBind(submitted.query, query.parameters)
     result <- dbFetch(submitted.query)
@@ -44,7 +44,7 @@ get.map.data <- function(conn, year, month) {
                   'FROM', table.name,
                   'WHERE Year = :year AND Month = :month AND Label = :label')
     query.parameters <- list(year = year, month = month, label = 'all.drug.OD')
-    result = execute.parameterized.query(conn, query, query.parameters)
+    result <- execute.parameterized.query(conn, query, query.parameters)
     return(result)
 }
 
@@ -52,7 +52,7 @@ get.time.data <- function(conn, state) {
     query <- paste('SELECT State, Year, Month, Label, Value',
                   'FROM', table.name,
                   'WHERE State = :state')
-    query.parameters = list(state = state)
-    result = execute.parameterized.query(conn, query, query.parameters)
+    query.parameters <- list(state = state)
+    result <- execute.parameterized.query(conn, query, query.parameters)
     return(result)
 }

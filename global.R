@@ -68,11 +68,11 @@ state.labels <- append(c('United States'), state.name)
 
 # In the data on deaths by drug OD, dates are given in the format 'January
 # 2015'.  Define a function for converting this format to a Date object.
-convert.to.Date <- function(month.year) {
+convert.to.date <- function(month.year) {
     date.object <-  as.Date(paste('01', month.year),
                            format = '%d %B %Y')
     return(date.object)
 }
 
 # The first date for which data is available.
-dataset.start.date <- convert.to.Date('January 2015')
+dataset.start.date <- convert.to.date('January 2015')
