@@ -16,10 +16,16 @@ sidebar <- dashboardSidebar(
     )
 )
 
-
 ###############################################################
 # Define the layout of the five tabItems in the dashboard body
 ###############################################################
+
+# The shinydashboard packaged used to organize this ui has a function box()
+# that can put a nicer border around a figure or a map.  However, including a
+# box can produce a distorted display, e.g., because of a time lag between
+# resizing the box and resizing the boxed object.  As a result, figures and
+# maps are set off from the edges of the viewing window using the column()
+# function rather than the box() function.
 
 data.source.deaths <- 'https://data.cdc.gov/NCHS/VSRR-Provisional-Drug-Overdose-Death-Counts/xkb8-kh2a'
 data.source.pop <- 'https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html'
@@ -53,36 +59,36 @@ summary.tab <-  tabItem(
     )
 )
 
-time.periods = paste('September', seq(from = 2015, to = 2019))
 map.tab <- tabItem(
     tabName = 'map',
     fluidRow(
         column(
             width = 12,
-            h1('Number of drug overdose deaths')
+            h1('Drug overdose deaths in the US')
         )
     ),
     fluidRow(
         column(
             width = 12,
-            h2('Place holder: map of US colored by stastic')
-        )
-    ),
-    fluidRow(
-        column(
-            width = 12,
-            selectizeInput(inputId = 'map.type',
-                           label = 'Select type of data to display',
-                           choices = statistic.labels)
+            selectizeInput(inputId = 'map.statistic',
+                           label = 'Select the statistic to display',
+                           choices = statistic.labels,
+                           selected = statistic.labels[1])
         )
     ),
     fluidRow(
         column(
             width = 12,
             selectizeInput(inputId = 'period',
-                           label = 'Twelve-month period ending',
+                           label = 'Select the twelve-month period ending',
                            choices = time.periods,
                            selected = time.periods[length(time.periods)] )
+        )
+    ),
+    fluidRow(
+        column(
+            width = 10,
+            htmlOutput('map'),
         )
     ),
     br(),
@@ -93,7 +99,7 @@ map.tab <- tabItem(
               'death rates involving specific drug categories are not compared between states.',
               'The only comparison made between states is the total number of drug-overdose deaths.')
         )
-    ),
+    )
 )
 
 time.tab <- tabItem(
@@ -107,48 +113,44 @@ time.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            selectizeInput(inputId = 'time.type',
-                           label = 'Select type of data to display',
-                           choices = statistic.labels)
+            selectizeInput(inputId = 'state',
+                           label = 'Select the US or a state',
+                           choices = state.labels,
+                           selected = state.labels[1])
+        )
+    ),
+    fluidRow(
+        column(
+            width = 12,
+            selectizeInput(inputId = 'time.statistic',
+                           label = 'Select the statistic to display',
+                           choices = statistic.labels,
+                           selected = statistic.labels[1])
         )
     ),
     fluidRow(
         column(
             width = 12,
             selectizeInput(inputId = 'drug',
-                           label = 'Select one or more curves to display',
+                           label = 'Select one or more categories to display',
                            choices = short.curve.labels,
-                           multiple = T)
+                           multiple = T,
+                           selected = short.curve.labels[1])
         )
     ),
     fluidRow(
         column(
-            width = 6,
-            h2('Place holder: time-series curve(s) for US')
-        ),
-        column(
-            width = 6,
-            h2('Place holder: time-series curve(s) for selected state')
-        )
-    ),
-    fluidRow(
-        column(
-            width = 6,
-            offset = 6,
-            selectizeInput(inputId = 'state',
-                           label = 'State',
-                           choices = state.labels,
-                           selected = 'Texas')
+            width = 10,
+            plotOutput('time'),
         )
     ),
     br(),
     fluidRow(
         column(
             width = 12,
-            p('Due to low data quality, the death count ',
-              'was not reported for certain combinations of month, year, state, and drug category.  ',
-              'In plots showing time-development, the data values that gave rise to the plot are ',
-              'therefore shown as dots.')
+            p('The death count was not reported for certain combinations of state, year, ',
+              'month, and category.  As a result, some plots of time development are truncated, ',
+              'and the available categories of drug-overdose deaths vary by state.')
         )
     ),
 )
@@ -160,7 +162,8 @@ data.tab <- tabItem(
             width = 12,
             selectizeInput(inputId = 'dataset',
                            label = 'Data source',
-                           choices = dataset.labels),
+                           choices = dataset.labels,
+                           selected = dataset.labels[1]),
         )
     ),
     fluidRow(

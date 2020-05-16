@@ -56,7 +56,7 @@ names(statistic.labels) <- c('Number of deaths',
                              'Number of deaths per 100,000 people',
                              'Percent change from prior year')
 
-dataset.labels <- c('drug.od.data', 'population.data')
+dataset.labels <- c('drug.OD.data', 'population.data')
 names(dataset.labels) <- c('Drug OD deaths', 'Annual state populations')
 
 time.periods <- paste('September', seq(from = 2015, to = 2019))
