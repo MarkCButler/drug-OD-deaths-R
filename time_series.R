@@ -1,25 +1,20 @@
+# The file defines functions for interpolating the annual population estimates
+# obtained from www.census.gov.  The interpolation is needed in order to avoid
+# spurious jumps in time-series plots.
+
 ###############################################################################
-# Bring the variables population.csv into the current namespace.
+# Bring the variable population.csv and the function convert.to.Date into the
+# current namespace.
 source('./global.R')
 
 ###############################################################################
-# In the data on deaths by drug OD, dates are given in the format 'January 2015'.
-# Define a function for converting this format to a Date object.
+# Define data structures and helper functions needed for the function
+# get.population that gets interpolated population estimates.
 
-convert.to.Date <- function(month.year) {
-    date.object <-  as.Date(paste('01', month.year),
-                           format = '%d %B %Y')
-    return(date.object)
-}
-
-###############################################################################
-# Define a function for finding interpolated populations.
-
-# The population.csv file was created by first manually modifying the .xlsx file
-# downloaded from www.census.gov to create a csv file and then doing
-# preprocessing with the script preprocess.R written for this app.  The csv file
-# contains population estimates for the US and each of the 50 states.  For each
-# of the years 2014 - 2019, there is an estimate of the population on July 1.
+# The population.csv file loaded here was created by manually modifying the
+# .xlsx file downloaded from www.census.gov.  The csv file contains population
+# estimates for the US and each of the 50 states.  For each of the years 2014
+# - 2019, there is an estimate of the population on July 1.
 population <- read.csv(population.csv, row.names = 1, check.names = F)
 
 # First lapply is used to define one function for each row of the population

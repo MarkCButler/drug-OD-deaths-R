@@ -53,26 +53,26 @@ names(long.curve.labels) <- short.curve.labels
 # Choice of statistic for showing drug-overdose deaths
 statistic.labels <- c('death.count', 'normalized.death.count', 'percent.change')
 names(statistic.labels) <- c('Number of deaths',
-                             'Number of deaths per 100,000 population',
-                             'Percent change during one year')
+                             'Number of deaths per 100,000 people',
+                             'Percent change from prior year')
 
 dataset.labels <- c('drug.od.data', 'population.data')
 names(dataset.labels) <- c('Drug OD deaths', 'Annual state populations')
 
+time.periods <- paste('September', seq(from = 2015, to = 2019))
+
+state.labels <- append(c('United States'), state.name)
+
 ###############################################################################
-# Variables involving state names and abbreviations
+# Objects needed for convenient handling of dates.
 
-# The vector named.state.abbreviations is used for converting state names to
-# state abbreviations.  State abbreviations are used in data frames, while
-# full state names are shown in the user interface.
-named.state.abbreviations <- setNames(state.abb, state.name)
+# In the data on deaths by drug OD, dates are given in the format 'January
+# 2015'.  Define a function for converting this format to a Date object.
+convert.to.Date <- function(month.year) {
+    date.object <-  as.Date(paste('01', month.year),
+                           format = '%d %B %Y')
+    return(date.object)
+}
 
-# Vector used to achieve consistent row order in the display of data frames.
-ordered.abbreviations <- append(c('US'), sort(state.abb))
-
-# Vector used in the selectizeInput widget for selecting the US or a state.
-# The full names will be displayed, with "United States" listed first and full
-# state names listed alphabetically below.
-state.labels <- c('US')
-names(state.labels) <- c('United States')
-state.labels <- append(state.labels, named.state.abbreviations)
+# The first date for which data is available.
+dataset.start.date <- convert.to.Date('January 2015')
