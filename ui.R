@@ -69,16 +69,14 @@ map.tab <- tabItem(
     ),
     fluidRow(
         column(
-            width = 12,
+            width = 4,
             selectizeInput(inputId = 'map.statistic',
                            label = 'Select the statistic to display',
                            choices = statistic.labels,
                            selected = statistic.labels[1])
-        )
-    ),
-    fluidRow(
+        ),
         column(
-            width = 12,
+            width = 4,
             selectizeInput(inputId = 'period',
                            label = 'Select the twelve-month period ending',
                            choices = time.periods,
@@ -87,7 +85,14 @@ map.tab <- tabItem(
     ),
     fluidRow(
         column(
-            width = 10,
+            width = 8,
+            h3(textOutput('map.title')),
+            h4(textOutput('map.subtitle'))
+        )
+    ),
+    fluidRow(
+        column(
+            width = 8,
             htmlOutput('map'),
         )
     ),
@@ -112,35 +117,38 @@ time.tab <- tabItem(
     ),
     fluidRow(
         column(
-            width = 12,
+            width = 4,
             selectizeInput(inputId = 'state',
                            label = 'Select the US or a state',
                            choices = state.labels,
                            selected = state.labels[1])
-        )
-    ),
-    fluidRow(
+        ),
         column(
-            width = 12,
+            width = 4,
             selectizeInput(inputId = 'time.statistic',
                            label = 'Select the statistic to display',
                            choices = statistic.labels,
                            selected = statistic.labels[1])
-        )
-    ),
-    fluidRow(
+        ),
         column(
-            width = 12,
+            width = 4,
             selectizeInput(inputId = 'category',
                            label = 'Select one or more categories to display',
-                           choices = short.curve.labels,
+                           choices = curve.labels,
                            multiple = T,
-                           selected = short.curve.labels[1])
+                           selected = curve.labels[1])
         )
     ),
     fluidRow(
         column(
-            width = 10,
+            width = 8,
+            h3(textOutput('time.title')),
+            h4(textOutput('time.subtitle'))
+        )
+    ),
+    fluidRow(
+        column(
+            width = 8,
             plotOutput('time'),
         )
     ),
@@ -262,10 +270,10 @@ notes.tab <- tabItem(
                 tags$li(
                     'Additional information regarding the annual population estimates is available at ',
                     a(href = data.source.pop, data.source.pop)
-                ),
+                )
             )
         )
-    ),
+    )
 )
 
 #####################################################

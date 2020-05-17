@@ -86,15 +86,35 @@ server <- function(input, output, session) {
         }
     })
 
-    # Fake map output to trigger reactive expressions that fetch map data.
+    output$map.title <- renderText({
+        index <- match(input$map.statistic, statistic.labels)
+        title <- map.statistic.labels[index]
+        title
+    })
+    output$map.subtitle <- renderText({
+        if (input$map.statistic == 'percent.change') {
+            index <- match(input$period, time.periods)
+            previous.period <- time.periods[index - 1]
+            subtitle <- paste(previous.period, 'to', input$period)
+        } else {
+            subtitle <- paste('Twelve-month period ending',
+                              input$period)
+        }
+        subtitle
+    })
+
+    # The map rendered by renderGvis with gvisGeoChart does not resize
+    # automatically when the browser window is resized.  However, everything
+    # else on the page does resize automatically, which gives a poor display.
+    # There are suggestions on forums for triggering a resize of a googleVis
+    # chart when the browser is resized, but the performance is erratic and
+    # buggy.  So I am just tolerating this.
     output$map <- renderGvis({
-        head(map.data())
-        state_stat <- data.frame(state.name = rownames(state.x77), state.x77)
-        choice <- colnames(state_stat)[-1]
-        gvisGeoChart(state_stat, "state.name", choice[1],
-                     options=list(region="US", displayMode="regions",
-                                  resolution="provinces",
-                                  width="auto", height="auto"))
+        data <- filter(map.data(), State != 'United States')
+        gvisGeoChart(data, locationvar = 'State', colorvar = 'Value',
+                     options = list(region = 'US', displaymode = 'regions',
+                                    resolution = 'provinces',
+                                    width = 'auto', height = 'auto'))
     })
 
     ##########################################################################
@@ -144,7 +164,7 @@ server <- function(input, output, session) {
 
         # Order the categories based on their position in the full list of
         # categories.
-        categories <- categories[order(match(categories, short.curve.labels))]
+        categories <- categories[order(match(categories, curve.labels))]
 
         # The selected choices should be the intersection of the previously
         # selected choices and the available categories, with order
@@ -158,6 +178,14 @@ server <- function(input, output, session) {
 
         updateSelectizeInput(session, 'category', choices = categories,
                              selected = selected.update, server = F)
+    })
+
+    output$time.title <- renderText({
+        index <- match(input$time.statistic, statistic.labels)
+        title <- time.statistic.labels[index]
+    })
+    output$time.subtitle <- renderText({
+        input$state
     })
 
     # Fake plot output to trigger reactive expressions that fetch time data.

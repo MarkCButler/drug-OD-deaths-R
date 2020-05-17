@@ -43,7 +43,7 @@ deaths.df <- select(deaths.df, State, Year, Month, Indicator, Data.Value) %>%
 # 'T40.0', and after this check, simple substrings such as 'T40.4' uniquely
 # identify the remaining indicators.
 #
-# The labels are elements of the vector short.curve.labels defined in global.R.
+# The labels are elements of the vector curve.labels defined in global.R.
 label <- case_when(
     str_detect(deaths.df$Indicator, 'T40.0') ~ 'all.opioids',
     str_detect(deaths.df$Indicator, 'T40.1') ~ 'heroin',
