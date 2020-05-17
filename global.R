@@ -48,14 +48,14 @@ names(curve.labels) <- long.curve.labels
 names(long.curve.labels) <- curve.labels
 
 ###############################################################################
-# Variables used in selectizeInput widgets
+# Variables associated with widgets in the user interface
 
 # Choice of statistic for showing drug-overdose deaths.
 statistic.labels <- c('death.count', 'normalized.death.count', 'percent.change')
 names(statistic.labels) <- c('Number of deaths',
                              'Number of deaths per 100,000 people',
                              'Percent change from prior year')
-# Labels used in the map and time-development tabs, given here to facilitate
+# Labels used in the map and time-development tabs are defined here to facilitate
 # keeping them consistent with the main variable statistic.labels.
 map.statistic.labels <- c('Number of drug-overdose deaths',
                           'Number of drug-overdose deaths per 100,000 people',
@@ -63,7 +63,6 @@ map.statistic.labels <- c('Number of drug-overdose deaths',
 time.statistic.labels <- c('Number of deaths',
                            'Number of deaths per 100,000 people',
                            'Percent change during one year')
-
 
 dataset.labels <- c('drug.OD.data', 'population.data')
 names(dataset.labels) <- c('Drug OD deaths', 'Annual state populations')
