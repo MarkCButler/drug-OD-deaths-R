@@ -4,9 +4,7 @@ library(shiny)
 library(googleVis)
 
 source('./database.R')
-source('./time_series.R')
 source('./process.R')
-
 
 server <- function(input, output, session) {
 
@@ -18,33 +16,12 @@ server <- function(input, output, session) {
     # Map tab
 
     # Reactive expression to fetch map data when it needs to be refreshed.  Note
-    # that a change to input$period triggers all updates and data processing for
-    # the map tab, including an attempt to calculate percent change from the
-    # prior year if possible (i.e., if the year is not the first year for which
-    # data is available).
+    # that a change to input$period triggers all processing for the map tab,
+    # including an attempt to calculate percent change from the prior year if
+    # possible (i.e., if the year is not the first year for which data is
+    # available).  The function get.processed.map.data is defined in process.R.
     map.data <- eventReactive(input$period, {
-        # Get map data for the selected month / year combination.
-        month.year <- unlist(strsplit(input$period, ' '))
-        month <- month.year[1]
-        year <- month.year[2]
-        data.selected.year <- get.map.data(conn, year, month)
-
-        # If possible get data from the prior year.
-        prior.year <- as.character(as.numeric(month.year[2]) - 1)
-        if (dataset.start.date <= convert.to.date(paste(month, prior.year))) {
-            data.prior.year <- get.map.data(conn, prior.year, month)
-        } else {
-            data.prior.year <- data.frame(fake.column = character(0))
-        }
-
-        # The function process.map.data just returns its first input in order
-        # to allow testing of reactive expressions.
-        data <- process.map.data(data.selected.year, data.prior.year)
-        cat(file = stderr(), '\nUpdated map.data\n')
-        cat(file = stderr(), 'nrow(map.data): ', nrow(data), '\n')
-        cat(file = stderr(), 'head(map.data): ', toString(head(data)), '\n')
-
-        data
+        get.processed.map.data(conn, input$period)
     })
 
     # Update the choice of time periods based on the selection for
@@ -68,20 +45,33 @@ server <- function(input, output, session) {
     # the answer is no, so there is no loss of efficiency due to
     # updateSelectizeInput.
     observeEvent(input$map.statistic, {
-        # Save the value of input$period so that we can preserve it if
-        # possible after updating the set of choices for the time period.
+        # Save the value of input$period so that we can preserve it after
+        # updating the set of choices for the time period.  Note that because
+        # both input widgets of the map tab are updated in response to user
+        # selection, it should always be possible to preserve the selection.
         selected <- input$period
 
-        if (input$map.statistic == 'percent.change') {
-            # If the user had selected September 2015, switch to September
-            # 2016.
-            if (selected == time.periods[1]) {
-                selected <- time.periods[2]
-            }
+        if (input$map.statistic == statistic.labels[3]) {
             updateSelectizeInput(session, 'period', choices = time.periods[-1],
                                  selected = selected, server = F)
         } else {
             updateSelectizeInput(session, 'period', choices = time.periods,
+                                 selected = selected, server = F)
+        }
+    })
+
+    # Input the choice of statistic to display based on the selected time
+    # period.
+    observeEvent(input$period, {
+        selected <- input$map.statistic
+
+        # If the selected time period is the first choice in the list, the
+        # option to display percent change from the previous year is removed.
+        if (input$period == time.periods[1]) {
+            updateSelectizeInput(session, 'map.statistic', choices = statistic.labels[-3],
+                                 selected = selected, server = F)
+        } else {
+            updateSelectizeInput(session, 'map.statistic', choices = statistic.labels,
                                  selected = selected, server = F)
         }
     })
@@ -108,10 +98,22 @@ server <- function(input, output, session) {
     # else on the page does resize automatically, which gives a poor display.
     # There are suggestions on forums for triggering a resize of a googleVis
     # chart when the browser is resized, but the performance is erratic and
-    # buggy.  So I am just tolerating this.
+    # buggy.  I am tolerating this for now but intend to try injecting
+    # javascript to trigger resizing of the plot.
     output$map <- renderGvis({
-        data <- filter(map.data(), State != 'United States')
-        gvisGeoChart(data, locationvar = 'State', colorvar = 'Value',
+        data <- map.data()
+
+        if (input$map.statistic == 'death.count') {
+            colorvar <- 'Number.of.deaths'
+        } else if (input$map.statistic == 'normalized.death.count') {
+            colorvar <- 'Number.of.deaths.per.100k'
+        } else if ((input$map.statistic == 'percent.change') && ('Percent.change' %in% colnames(data))) {
+            colorvar <- 'Percent.change'
+        } else {
+            colorvar <- ''
+        }
+
+        gvisGeoChart(data, locationvar = 'State', colorvar = colorvar,
                      options = list(region = 'US', displaymode = 'regions',
                                     resolution = 'provinces',
                                     width = 'auto', height = 'auto'))
@@ -176,6 +178,7 @@ server <- function(input, output, session) {
             selected.update <- selected.update[order(match(selected.update, selected))]
         }
 
+        cat(file = stderr(), '\nNew categories:', toString(categories), '\n')
         updateSelectizeInput(session, 'category', choices = categories,
                              selected = selected.update, server = F)
     })

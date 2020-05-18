@@ -1,5 +1,3 @@
-library(dplyr)
-
 # This file defines functions for processing the raw data to generate data
 # frames containing the values to be plotted.
 #
@@ -12,16 +10,21 @@ library(dplyr)
 # This file also define a function to determine the set of curves that can be
 # plotted after the raw data has been processed.
 
-# The unit used to normalize death count.
-UNIT.POPULATION <- 1e5
+library(dplyr)
 
 # Bring the variables statistic.labels and curve.labels into the current
 # namespace.
 source('./global.R')
 
+# Define functions for fetching data.
+source('./database.R')
+
 # Define the functions that interpolate annual population estimates in order to
 # avoid spurious jumps in time-development plots.
 source('./time_series.R')
+
+# The unit used to normalize death count.
+UNIT.POPULATION <- 1e5
 
 # The app uses a slightly broader set of categories for drug-overdose deaths
 # than the raw data, so it is necessary to add together some values from the
@@ -60,40 +63,66 @@ normalize.by.population <- function(data) {
     return(select(data, -Population, -Month.year))
 }
 
-process.map.data <- function(data.selected.year, data.prior.year) {
-    # Map data contains only a single label all.drug.OD, which corresponds to
-    # a single value of Indicator in the raw data, so there is no need to call
-    # get.labeled.data.
-
-    # After this command is completed, we have the following column names:
-    # State, Year, Month, Value, Normalized.value
-    data <- normalize.by.population(data.selected.year)
-
-    if (nrow(data.prior.year) > 0) {
-        # Use a join to calculate percent change from the two data frames.  Note
-        # that since the difference in the dates for data.selected.year and
-        # data.prior.year is always 1 year, it is not strictly necessary to track the
-        # year in connection with the join.  However, preserving the year
-        # information makes it easier to check the data frame produced by the
-        # join.
-        data.prior.year <- rename(data.prior.year, Prior.year = Year, Prior.value = Value) %>%
-            mutate(Year = Prior.year + 1)
-        data <- inner_join(data, data.prior.year, by = c('State', 'Month', 'Year')) %>%
-            mutate(Percent.change = (Value - Prior.value) / Prior.value * 100) %>%
-            select(-Prior.year, -Prior.value)
-    }
-
-    return(data)
-}
-
-process.time.data <- function(data) {
-    data <- get.labeled.data(data)
-    return(data)
-}
-
 find.OD.categories <- function(data, statistic.label) {
     # Return random selection for testing reactive expressions in server.R.
     # Select 4 of the 7 labels.
     categories <- curve.labels[sample.int(length(curve.labels), size = 4)]
     return(categories)
+}
+
+process.time.data <- function(data) {
+    # Only the initial step of processing has been defined so far.
+    data <- get.labeled.data(data)
+    return(data)
+}
+
+# The function that processes the map data also fetches the data from the
+# database.  Trying to separate the tasks of fetching and processing the map
+# data would complicate the code unnecessarily, since the choice depends on the
+# time period selected by the user.
+#
+# The input to get.processed.map.data is a string of the form 'September 2019'
+# obtained from a widget on the map tab.  The string represents the 12-month
+# period ending at a given month and year.
+get.processed.map.data <- function(conn, month.year) {
+
+    # Get map data for the selected month / year combination.  The call to
+    # normalize.by.population adds a column Normalized.value giving the
+    # number of deaths per UNIT.POPULATION, Both normalize.by.population and
+    # UNIT.POPULATION are defined in process.R.  For the map data (which is
+    # seen when the user scans over the map with the mouse), we round this
+    # new column and rename it.
+    month.year.split <- unlist(strsplit(month.year, ' '))
+    month <- month.year.split[1]
+    year <- month.year.split[2]
+    data <- get.map.data(conn, year, month) %>%
+        normalize.by.population() %>%
+        mutate(Normalized.value = round(Normalized.value, 1)) %>%
+        rename(Number.of.deaths.per.100k = 'Normalized.value')
+
+    # If possible get data from the prior year.
+    prior.year <- as.character(as.numeric(year) - 1)
+    if (dataset.start.date <= convert.to.date(paste(month, prior.year))) {
+        data.prior.year <- get.map.data(conn, prior.year, month)
+
+        # Use a join to calculate percent change from the two data frames.
+        # Note that since the difference in the dates for data.selected.year
+        # and data.prior.year is always 1 year, it is not strictly necessary
+        # to track the year in connection with the join.  However, I find
+        # this form of the join (which is similar to the form used for the
+        # time data) conceptually clear.
+        data.prior.year <- rename(data.prior.year, Prior.year = Year, Prior.value = Value) %>%
+            mutate(Year = Prior.year + 1)
+        data <- inner_join(data, data.prior.year, by = c('State', 'Month', 'Year')) %>%
+            mutate(Percent.change = round((Value - Prior.value) / Prior.value * 100, 1)) %>%
+            select(-Prior.year, -Prior.value)
+    }
+
+    cat(file = stderr(), '\nUpdated map.data\n')
+    cat(file = stderr(), 'nrow(map.data): ', nrow(data), '\n')
+    cat(file = stderr(), 'head(map.data): ', toString(head(data)), '\n')
+
+    # Since the column name will be seen when the user scans over the map,
+    # rename the Value column (which is inherited from the raw data).
+    rename(data, Number.of.deaths = 'Value')
 }

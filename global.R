@@ -72,7 +72,7 @@ time.periods <- paste('September', seq(from = 2015, to = 2019))
 state.labels <- append(c('United States'), state.name)
 
 ###############################################################################
-# Objects needed for convenient handling of dates.
+# Definitions needed for convenient handling of dates.
 
 # In the data on deaths by drug OD, dates are given in the format 'January
 # 2015'.  Define a function for converting this format to a Date object.

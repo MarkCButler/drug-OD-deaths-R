@@ -42,8 +42,8 @@ execute.parameterized.query <- function(conn, query, query.parameters) {
 get.map.data <- function(conn, year, month) {
     query <- paste('SELECT State, Year, Month, Value',
                   'FROM', table.name,
-                  'WHERE Year = :year AND Month = :month AND Label = :label')
-    query.parameters <- list(year = year, month = month, label = 'all.drug.OD')
+                  'WHERE State != :state and Year = :year AND Month = :month AND Label = :label')
+    query.parameters <- list(state = 'United States', year = year, month = month, label = 'all.drug.OD')
     result <- execute.parameterized.query(conn, query, query.parameters)
     return(result)
 }
