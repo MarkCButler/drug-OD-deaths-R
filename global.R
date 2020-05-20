@@ -44,7 +44,7 @@ names(curve.labels) <- long.curve.labels
 # correspondence between plot labels and ICD-10 codes for cause of death.  In
 # this context, it is helpful to have short, fixed names for the elements of
 # long.curve.labels, so that we can hard code the process of taking a
-# reordered subset of long.curve.labels.
+# reordered subset of long.curve.labels to display in the table.
 names(long.curve.labels) <- curve.labels
 
 ###############################################################################
@@ -55,14 +55,17 @@ statistic.labels <- c('death.count', 'normalized.death.count', 'percent.change')
 names(statistic.labels) <- c('Number of deaths',
                              'Number of deaths per 100,000 people',
                              'Percent change from prior year')
-# Labels used in the map and time-development tabs are defined here to facilitate
-# keeping them consistent with the main variable statistic.labels.
-map.statistic.labels <- c('Number of drug-overdose deaths',
-                          'Number of drug-overdose deaths per 100,000 people',
-                          'Percent change in drug-overdose deaths')
-time.statistic.labels <- c('Number of deaths',
-                           'Number of deaths per 100,000 people',
-                           'Percent change during one year')
+# Character vectors used in plot titles for the map and time-development tabs
+# are defined here to facilitate keeping them consistent with the main
+# variable statistic.labels.  (For instance:  given an index in
+# statistic.labels, we want to extract the corresponding value from
+# map.titles.)
+map.titles <- c('Number of drug-overdose deaths',
+                'Number of drug-overdose deaths per 100,000 people',
+                'Percent change in drug-overdose deaths')
+time.titles <- c('Number of deaths',
+                 'Number of deaths per 100,000 people',
+                 'Percent change during one year')
 
 dataset.labels <- c('drug.OD.data', 'population.data')
 names(dataset.labels) <- c('Drug OD deaths', 'Annual state populations')

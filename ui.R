@@ -224,9 +224,7 @@ notes.tab <- tabItem(
                 ),
                 tags$li(
                     'Due to low data quality, the death count ',
-                    'was not reported for certain combinations of month, year, state, and drug category.  ',
-                    'In plots showing time-development, the data values that gave rise to the plot are ',
-                    'therefore shown as dots.'
+                    'was not reported for certain combinations of month, year, state, and drug category.  '
                 ),
                 tags$li(
                     'Because of variations in reporting by different states, death rates involving ',
@@ -243,7 +241,7 @@ notes.tab <- tabItem(
                     tableOutput('code.table')
                 ),
                 tags$li(
-                    'Additional information regarding the data for drug-overdose deaths is available at ',
+                    'Additional information regarding the data on drug-overdose deaths is available at ',
                     a(href = data.source.deaths, data.source.deaths)
                 )
             )

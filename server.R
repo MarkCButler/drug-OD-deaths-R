@@ -15,11 +15,8 @@ server <- function(input, output, session) {
     ##########################################################################
     # Map tab
 
-    # Reactive expression to fetch map data when it needs to be refreshed.  Note
-    # that a change to input$period triggers all processing for the map tab,
-    # including an attempt to calculate percent change from the prior year if
-    # possible (i.e., if the year is not the first year for which data is
-    # available).  The function get.processed.map.data is defined in process.R.
+    # Reactive expression to fetch map data when it needs to be refreshed.
+    # The function get.processed.map.data is defined in process.R.
     map.data <- eventReactive(input$period, {
         get.processed.map.data(conn, input$period)
     })
@@ -60,7 +57,7 @@ server <- function(input, output, session) {
         }
     })
 
-    # Input the choice of statistic to display based on the selected time
+    # Update the choice of statistic to display based on the selected time
     # period.
     observeEvent(input$period, {
         selected <- input$map.statistic
@@ -78,7 +75,7 @@ server <- function(input, output, session) {
 
     output$map.title <- renderText({
         index <- match(input$map.statistic, statistic.labels)
-        title <- map.statistic.labels[index]
+        title <- map.titles[index]
         title
     })
     output$map.subtitle <- renderText({
@@ -93,48 +90,40 @@ server <- function(input, output, session) {
         subtitle
     })
 
-    # The map rendered by renderGvis with gvisGeoChart does not resize
-    # automatically when the browser window is resized.  However, everything
-    # else on the page does resize automatically, which gives a poor display.
-    # There are suggestions on forums for triggering a resize of a googleVis
-    # chart when the browser is resized, but the performance is erratic and
-    # buggy.  I am tolerating this for now but intend to try injecting
-    # javascript to trigger resizing of the plot.
-    output$map <- renderGvis({
+    output$map <- renderPlot({
         data <- map.data()
 
-        if (input$map.statistic == 'death.count') {
-            colorvar <- 'Number.of.deaths'
-        } else if (input$map.statistic == 'normalized.death.count') {
-            colorvar <- 'Number.of.deaths.per.100k'
+        if (input$map.statistic == 'normalized.death.count') {
+            selected.column <- 'Normalized.value'
         } else if ((input$map.statistic == 'percent.change') && ('Percent.change' %in% colnames(data))) {
-            colorvar <- 'Percent.change'
+            selected.column <- 'Percent.change'
         } else {
-            colorvar <- ''
+            selected.column <- 'Value'
+            if (input$map.statistic != 'death.count') {
+                cat(file = stderr(),
+                    '\nWARNING:  Unable to find a valid choice for the column to display ',
+                    'on the map tab.\n')
+            }
         }
 
-        gvisGeoChart(data, locationvar = 'State', colorvar = colorvar,
-                     options = list(region = 'US', displaymode = 'regions',
-                                    resolution = 'provinces',
-                                    width = 'auto', height = 'auto'))
+        cat(file = stderr(), '\n\n\nPlotting map data\n')
+        cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
+        cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
+        cat(file = stderr(), '\ndata: ', toString(data), '\n')
+        cat(file = stderr(), '\nselected.column: ', selected.column, '\n')
+        cat(file = stderr(), '\ndata[, "State", drop = T]:  ', data[, 'State', drop = T])
+        cat(file = stderr(), '\ndata[, selected.column, drop = T]:  ', data[, selected.column, drop = T])
+
+        plot(data[, selected.column, drop = T])
     })
 
     ##########################################################################
     # Time-development tab
 
-    # Reactive expression to fetch the time-development data.  All processing
-    # needed for the data is done in response to a change in input$state.
+    # Reactive expression to fetch the data for the time-development tab.
     time.data <- eventReactive(input$state, {
         data <- get.time.data(conn, input$state)
-
-        # The function process.map.data just returns its input in order
-        # to allow testing of reactive expressions.
-        data <- process.time.data(data)
-        cat(file = stderr(), '\nUpdated time.data\n')
-        cat(file = stderr(), 'nrow(time.data): ', nrow(data), '\n')
-        cat(file = stderr(), 'head(time.data): ', toString(head(data)), '\n')
-
-        data
+        process.time.data(data)
     })
 
     # The available categories of drug-overdose deaths depend on the selected
@@ -185,17 +174,20 @@ server <- function(input, output, session) {
 
     output$time.title <- renderText({
         index <- match(input$time.statistic, statistic.labels)
-        title <- time.statistic.labels[index]
+        title <- time.titles[index]
     })
     output$time.subtitle <- renderText({
         input$state
     })
 
-    # Fake plot output to trigger reactive expressions that fetch time data.
     output$time <- renderPlot({
-        head(time.data())
-        x <- seq(1, 10)
-        plot(x)
+        data <- time.data()
+
+        cat(file = stderr(), '\n\n\nPlotting time data\n')
+        cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
+        cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
+        cat(file = stderr(), '\nhead(data): ', toString(data), '\n')
+        plot(seq(1, 10))
     })
 
     ##########################################################################
