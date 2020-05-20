@@ -93,7 +93,7 @@ map.tab <- tabItem(
     fluidRow(
         column(
             width = 8,
-            htmlOutput('map'),
+            plotOutput('map'),
         )
     ),
     br(),
@@ -209,30 +209,30 @@ notes.tab <- tabItem(
         column(
             width = 10,
             tags$ul(
-                tags$li(HTML(
+                tags$li(
                     'The death counts are provisional values given by ',
                     'the Vital Statistics Rapid Release program of the US government.'
-                )),
-                tags$li(HTML(
+                ),
+                tags$li(
                     'Provisional counts of drug-overdose deaths are reported with a lag time ',
                     'of six months following the date of death.'
-                )),
-                tags$li(HTML(
+                ),
+                tags$li(
                     'The death count listed for a given month represents the number of deaths ',
                     'occuring during the preceding 12-month period.  As a result, the death count ',
                     'does not show seasonal variation.'
-                )),
-                tags$li(HTML(
+                ),
+                tags$li(
                     'Due to low data quality, the death count ',
                     'was not reported for certain combinations of month, year, state, and drug category.  ',
                     'In plots showing time-development, the data values that gave rise to the plot are ',
                     'therefore shown as dots.'
-                )),
-                tags$li(HTML(
+                ),
+                tags$li(
                     'Because of variations in reporting by different states, death rates involving ',
                     'specific drug categories are not compared between states.  The only comparison made ',
                     'between states is the total number of drug-overdose deaths.'
-                )),
+                ),
                 tags$li(
                     HTML(
                         'The data includes cause-of-death codes from ICD–10, ',
@@ -259,14 +259,14 @@ notes.tab <- tabItem(
         column(
             width = 10,
             tags$ul(
-                tags$li(HTML(
+                tags$li(
                     'Annual population estimates (dated July 1) are given by the ',
                     'US Census Bureau.'
-                )),
-                tags$li(HTML(
+                ),
+                tags$li(
                     'For plots showing number of deaths per 100,000 population, linear interpolation ',
                     'is used to obtain population estimates that do not have an abrupt change in July.'
-                )),
+                ),
                 tags$li(
                     'Additional information regarding the annual population estimates is available at ',
                     a(href = data.source.pop, data.source.pop)
