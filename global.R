@@ -48,7 +48,7 @@ names(curve.labels) <- long.curve.labels
 names(long.curve.labels) <- curve.labels
 
 ###############################################################################
-# Variables associated with widgets in the user interface
+# Definitions involving the choice of statistics to display
 
 # Choice of statistic for showing drug-overdose deaths.
 statistic.labels <- c('death.count', 'normalized.death.count', 'percent.change')
@@ -66,6 +66,32 @@ map.titles <- c('Number of drug-overdose deaths',
 time.titles <- c('Number of deaths',
                  'Number of deaths per 100,000 people',
                  'Percent change during one year')
+
+# After the data has been processed, the column names for the three different
+# choices of statistic are 'Value', 'Normalized.value', and 'Percent.change'.
+# Given a user selection for the stastic to display, we need to find the
+# corresponding column.  Rather than imposing a rigid correspondence between
+# the column names and the strings in the vector statistic.label, I use the
+# function get.column.name to handle the correspondence.
+get.column.name <- function(data, statistic.label) {
+    if (statistic.label == 'normalized.death.count') {
+        column.name <- 'Normalized.value'
+    } else if ((statistic.label == 'percent.change') && ('Percent.change' %in% colnames(data))) {
+        column.name <- 'Percent.change'
+    } else {
+        column.name <- 'Value'
+        if (statistic.label != 'death.count') {
+            cat(file = stderr(),
+                '\nWARNING:  Unable to find a valid choice for the column to display ',
+                'in get.column.name\n')
+        }
+    }
+
+    return(column.name)
+}
+
+###############################################################################
+# Variables associated with other widgets in the user interface
 
 dataset.labels <- c('drug.OD.data', 'population.data')
 names(dataset.labels) <- c('Drug OD deaths', 'Annual state populations')

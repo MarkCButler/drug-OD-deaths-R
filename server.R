@@ -18,6 +18,7 @@ server <- function(input, output, session) {
     # Reactive expression to fetch map data when it needs to be refreshed.
     # The function get.processed.map.data is defined in process.R.
     map.data <- eventReactive(input$period, {
+        cat(file = stderr(), '\n\nUpdating map data\n')
         get.processed.map.data(conn, input$period)
     })
 
@@ -92,29 +93,16 @@ server <- function(input, output, session) {
 
     output$map <- renderPlot({
         data <- map.data()
+        column.name <- get.column.name(data, input$map.statistic)
+        data <- select(data, State, one_of(column.name))
 
-        if (input$map.statistic == 'normalized.death.count') {
-            selected.column <- 'Normalized.value'
-        } else if ((input$map.statistic == 'percent.change') && ('Percent.change' %in% colnames(data))) {
-            selected.column <- 'Percent.change'
-        } else {
-            selected.column <- 'Value'
-            if (input$map.statistic != 'death.count') {
-                cat(file = stderr(),
-                    '\nWARNING:  Unable to find a valid choice for the column to display ',
-                    'on the map tab.\n')
-            }
-        }
-
-        cat(file = stderr(), '\n\n\nPlotting map data\n')
+        cat(file = stderr(), '\n\nPlotting map data\n')
         cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
         cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
-        cat(file = stderr(), '\ndata: ', toString(data), '\n')
-        cat(file = stderr(), '\nselected.column: ', selected.column, '\n')
-        cat(file = stderr(), '\ndata[, "State", drop = T]:  ', data[, 'State', drop = T])
-        cat(file = stderr(), '\ndata[, selected.column, drop = T]:  ', data[, selected.column, drop = T])
+        cat(file = stderr(), '\ndata[, "State", drop = T]:  ', data[, 'State', drop = T], '\n')
+        cat(file = stderr(), '\ndata[, column.name, drop = T]:  ', data[, column.name, drop = T], '\n')
 
-        plot(data[, selected.column, drop = T])
+        plot(data[, column.name, drop = T])
     })
 
     ##########################################################################
@@ -122,6 +110,7 @@ server <- function(input, output, session) {
 
     # Reactive expression to fetch the data for the time-development tab.
     time.data <- eventReactive(input$state, {
+        cat(file = stderr(), '\n\nUpdating time data\n')
         data <- get.time.data(conn, input$state)
         process.time.data(data)
     })
@@ -130,7 +119,7 @@ server <- function(input, output, session) {
     # state.  For instance, the only category available for CA in the raw data
     # is "Number of Drug Overdose Deaths."
     #
-    # The available categories could also depend on the choice of statistic to
+    # The available categories also depend on the choice of statistic to
     # display.  For instance, if the time span for available state data
     # corresponding to a particular category is less than a year, a
     # time-series plot of "percent change from prior year" cannot be shown.
@@ -147,9 +136,11 @@ server <- function(input, output, session) {
     # the argument to reactive() can be any set of statements that includes
     # the two input values that need to be monitored.
     check.OD.categories <- reactive({
+        cat(file = stderr(), '\n\nEvent occurred to trigger update of categories\n')
         c(time.data(), input$time.statistic)
     })
     observeEvent(check.OD.categories(), {
+        cat(file = stderr(), '\n\nUpdating categories\n')
         selected <- input$category
         categories <- find.OD.categories(time.data(), input$time.statistic)
 
@@ -182,11 +173,13 @@ server <- function(input, output, session) {
 
     output$time <- renderPlot({
         data <- time.data()
+        column.name <- get.column.name(data, input$time.statistic)
+        data <- select(data, Year, Month, Label, one_of(column.name))
 
-        cat(file = stderr(), '\n\n\nPlotting time data\n')
+        cat(file = stderr(), '\n\nPlotting time data\n')
         cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
         cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
-        cat(file = stderr(), '\nhead(data): ', toString(data), '\n')
+        cat(file = stderr(), '\nhead(data): ', toString(head(data)), '\n')
         plot(seq(1, 10))
     })
 

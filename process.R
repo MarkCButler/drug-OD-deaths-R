@@ -12,8 +12,7 @@
 
 library(dplyr)
 
-# Bring the variables statistic.labels and curve.labels into the current
-# namespace.
+# Bring the the function get.column.name into the current namespace.
 source('./global.R')
 
 # Define functions for fetching data.
@@ -24,18 +23,7 @@ source('./database.R')
 source('./time_series.R')
 
 # The unit used to normalize death count.
-UNIT.POPULATION <- 1e5
-
-# The app uses a slightly broader set of categories for drug-overdose deaths
-# than the raw data, so it is necessary to add together some values from the
-# raw data.  This is handled by get.labeled.data.
-get.labeled.data <- function(data) {
-    # Group by all columns except Value and take the sum of Value.
-    data <- group_by_at(data, vars(-Value)) %>%
-        summarise(Value = sum(Value)) %>%
-        ungroup()
-    return(data)
-}
+unit.population <- 1e5
 
 normalize.by.population <- function(data) {
     data['Population'] <- numeric(nrow(data))
@@ -44,73 +32,57 @@ normalize.by.population <- function(data) {
     # The function get.population defined in time_series.R accepts a vector of
     # dates but a single value for 'state' (which can be 'United States' or the
     # name of a state).  In the case of time-series data, there is only a single
-    # value of 'state', so the interpolation can be done with a single call to
-    # get.population.  For the map.data, however, it is necessary to do a loop
-    # over the 51 values for state, each corresponding to a single row of the
-    # data frame.
+    # value of 'state' in the data frame, so the interpolation can be done
+    # with a single call to get.population.  For the map.data, however, it is
+    # necessary to do a loop over the 51 values for state, each corresponding
+    # to a single row of the data frame.
     #
     # For the general case, loop over the values of state in the data frame.
     states <- unique(data$State)
     for (state in states) {
         selector <- (data$State == state)
-        dates <- convert.to.date(data[selector, 'Month.year'])
+        dates <- convert.to.date(data[selector, 'Month.year', drop = T])
         populations <- get.population(state, dates)
         data[selector, 'Population'] <- populations
     }
 
-    data <- mutate(data, Normalized.value = Value * UNIT.POPULATION / Population)
+    data <- mutate(data, Normalized.value = Value * unit.population / Population)
 
     return(select(data, -Population, -Month.year))
 }
 
-find.OD.categories <- function(data, statistic.label) {
-    # Return random selection for testing reactive expressions in server.R.
-    # Select 4 of the 7 labels.
-    categories <- curve.labels[sample.int(length(curve.labels), size = 4)]
-    return(categories)
-}
-
-process.time.data <- function(data) {
-    # Only the initial step of processing has been defined so far.
-    data <- get.labeled.data(data)
-    return(data)
-}
-
 # The function that processes the map data also fetches the data from the
-# database.  Trying to separate the tasks of fetching and processing the map
-# data would complicate the code unnecessarily, since the choice depends on the
-# time period selected by the user.
+# database.  Separating the tasks of fetching and processing the map data
+# would complicate the code unnecessarily, since the number of data frames
+# fetched from the database depends on the time period selected by the user.
 #
 # The input to get.processed.map.data is a string of the form 'September 2019'
 # obtained from a widget on the map tab.  The string represents the 12-month
 # period ending at a given month and year.
 get.processed.map.data <- function(conn, month.year) {
 
-    # Get map data for the selected month / year combination.  The call to
-    # normalize.by.population adds a column Normalized.value giving the
-    # number of deaths per UNIT.POPULATION, Both normalize.by.population and
-    # UNIT.POPULATION are defined in process.R.  For the map data (which is
-    # seen when the user scans over the map with the mouse), we round this
-    # new column and rename it.
+    # Fetch and process map data for the selected month / year combination.  The
+    # call to normalize.by.population adds a column Normalized.value giving the
+    # number of deaths per unit population, For the map data (which is seen when
+    # the user scans over the map with the mouse), we round this new column.
     month.year.split <- unlist(strsplit(month.year, ' '))
     month <- month.year.split[1]
     year <- month.year.split[2]
     data <- get.map.data(conn, year, month) %>%
         normalize.by.population() %>%
-        mutate(Normalized.value = round(Normalized.value, 1)) %>%
-        rename(Number.of.deaths.per.100k = 'Normalized.value')
+        mutate(Normalized.value = round(Normalized.value, 1))
 
     # If possible get data from the prior year.
     prior.year <- as.character(as.numeric(year) - 1)
     if (dataset.start.date <= convert.to.date(paste(month, prior.year))) {
         data.prior.year <- get.map.data(conn, prior.year, month)
 
-        # Use a join to calculate percent change from the two data frames.
-        # Note that since the difference in the dates for data.selected.year
-        # and data.prior.year is always 1 year, it is not strictly necessary
-        # to track the year in connection with the join.  However, I find
-        # this form of the join (which is similar to the form used for the
-        # time data) conceptually clear.
+        # Use a join to calculate percent change from the two data frames.  Note
+        # that since the difference in the dates for data.selected.year and
+        # data.prior.year is always 1 year, and it is not strictly necessary to
+        # track the month or year in connection with the join.  However, I find
+        # this form of the join (which is similar to the form used for the time
+        # data) conceptually clear.
         data.prior.year <- rename(data.prior.year, Prior.year = Year, Prior.value = Value) %>%
             mutate(Year = Prior.year + 1)
         data <- inner_join(data, data.prior.year, by = c('State', 'Month', 'Year')) %>%
@@ -118,11 +90,47 @@ get.processed.map.data <- function(conn, month.year) {
             select(-Prior.year, -Prior.value)
     }
 
-    cat(file = stderr(), '\nUpdated map.data\n')
-    cat(file = stderr(), 'nrow(map.data): ', nrow(data), '\n')
-    cat(file = stderr(), 'head(map.data): ', toString(head(data)), '\n')
+    return(data)
+}
 
-    # Since the column name will be seen when the user scans over the map,
-    # rename the Value column (which is inherited from the raw data).
-    rename(data, Number.of.deaths = 'Value')
+# The app uses a slightly broader set of categories for drug-overdose deaths
+# than the raw data, so it is necessary to add together some values from the
+# raw data.  This is handled by the function get.labeled.data defined here.
+#
+# Note that this processing is not needed for the map data, since this data only
+# includes the category 'all drug-overdose deaths', which is a category in the
+# raw data.
+get.labeled.data <- function(data) {
+    data <- group_by_at(data, vars(-Value)) %>%
+        summarise(Value = sum(Value)) %>%
+        ungroup()
+    return(data)
+}
+
+find.OD.categories <- function(data, statistic.label) {
+    column.name <- get.column.name(data, statistic.label)
+
+    label.counts <- select(data, Year, Month, Label, one_of(column.name)) %>%
+        na.omit() %>%
+        group_by(Label) %>%
+        summarise(count = n()) %>%
+        filter(count >= 2)
+
+    return(label.counts[, 'Label', drop = T])
+}
+
+process.time.data <- function(data) {
+    data <- get.labeled.data(data)  %>%
+        normalize.by.population()
+
+    # In order to find the percent change, do a self join.  In the code, create a
+    # modified copy of data before doing the join.
+    data.prior.year <- rename(data, Prior.year = Year, Prior.value = Value) %>%
+        mutate(Year = Prior.year + 1) %>%
+        select(-Normalized.value)
+    data <- left_join(data, data.prior.year, by = c('State', 'Month', 'Year', 'Label')) %>%
+        mutate(Percent.change = (Value - Prior.value) / Prior.value * 100) %>%
+        select(-Prior.year, -Prior.value)
+
+    return(data)
 }
