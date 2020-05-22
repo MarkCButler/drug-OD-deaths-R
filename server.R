@@ -94,7 +94,9 @@ server <- function(input, output, session) {
     output$map <- renderPlot({
         data <- map.data()
         column.name <- get.column.name(data, input$map.statistic)
-        data <- select(data, State, one_of(column.name))
+        data <- select(data, State, one_of(column.name)) %>%
+            na.omit()
+
 
         cat(file = stderr(), '\n\nPlotting map data\n')
         cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
@@ -120,43 +122,73 @@ server <- function(input, output, session) {
     # is "Number of Drug Overdose Deaths."
     #
     # The available categories also depend on the choice of statistic to
-    # display.  For instance, if the time span for available state data
+    # display.  For instance, when the time span for available state data
     # corresponding to a particular category is less than a year, a
     # time-series plot of "percent change from prior year" cannot be shown.
     #
-    # The function find.OD.categories in process.R is used to find the
-    # available categories from the processed data.
+    # The input widget that presents the user with a list of available
+    # categories and selected categories therefore needs to be updated when the
+    # time data changes as well as when the selected statistic changes.
     #
-    # Note that we want the set of categories to update in response to changes
-    # in the (reactive) time.data and/or input$time.statistic.  However, the
-    # code that is run in response includes the reactive value input$category.
-    # In order to avoid executing the code to update the set of categories
-    # unnecessarily, use observeEvent and define a reactive value
-    # check.OD.categories.  In the definition of check.OD.categories below,
-    # the argument to reactive() can be any set of statements that includes
-    # the two input values that need to be monitored.
-    check.OD.categories <- reactive({
-        cat(file = stderr(), '\n\nEvent occurred to trigger update of categories\n')
-        c(time.data(), input$time.statistic)
-    })
-    observeEvent(check.OD.categories(), {
-        cat(file = stderr(), '\n\nUpdating categories\n')
-        selected <- input$category
+    # In order to avoid error/warning messages from the plotting commands, we
+    # also need to guarantee that the categories being used for the plotting
+    # commands are valid.  So we define a reactive vector of selected
+    # categories.  This in turn depends on a reactive vector of available
+    # categories.
+    #
+    # Another way to understand the need for these two reactive vectors is to
+    # note that in updating the input widget that shows available categories, it
+    # is necessary to find a vector of available catogies as well as a vector
+    # corresponding to the subset that will remain selected when the widget is
+    # updated.  By exposing these two vectors as reactive values, we can make
+    # them available to plotting commands.  In this way, we avoid error/warning
+    # messages that would otherwise appear when a plotting command tries to do
+    # something impossible because its data frame has been updated but the
+    # categories to plot are temporarily invalid until information has
+    # propagated from an update to the user widget.
+
+    available.categories <- reactive({
+        cat(file = stderr(), '\n\nUpdating available.categories\n')
+
+        # The function find.OD.categories is defined in process.R.
         categories <- find.OD.categories(time.data(), input$time.statistic)
 
-        # Order the categories based on their position in the full list of
-        # categories.
+        # Order the categories based on their position in the full list, which
+        # is given by curve.labels.
         categories <- categories[order(match(categories, curve.labels))]
+        categories
+    })
 
+    # Helper function to eliminate code repetition.
+    update.category.selection <- function(current.selection, new.categories) {
         # The selected choices should be the intersection of the previously
         # selected choices and the available categories, with order
         # corresponding to the previously selected values.
-        selected.update <- intersect(selected, categories)
-        if (length(selected.update) == 0) {
-            selected.update <- categories[1]
+        updated.selection <- intersect(current.selection, new.categories)
+        if (length(updated.selection) == 0) {
+            updated.selection <- new.categories[1]
         } else {
-            selected.update <- selected.update[order(match(selected.update, selected))]
+            new.selection.indices <- order(match(updated.selection, current.selection))
+            updated.selection <- updated.selection[new.selection.indices]
         }
+        return(updated.selection)
+    }
+
+    selected.categories <- reactive({
+        cat(file = stderr(), '\n\nUpdating the set of selected categories.\n')
+        update.category.selection(input$category, available.categories())
+    })
+
+    # Update the input widget that presents the user with a list of available
+    # categories.  Since we do not want the widget updated each time the
+    # categories selected by the user change (i.e., when input$category
+    # changes), we use observeEvent to update only when available.categories()
+    # changes.
+    observeEvent(available.categories(), {
+        cat(file = stderr(), '\n\nUpdating widget that displays categories\n')
+
+        categories <- available.categories()
+        selected.update <- update.category.selection(input$category, available.categories())
 
         cat(file = stderr(), '\nNew categories:', toString(categories), '\n')
         updateSelectizeInput(session, 'category', choices = categories,
@@ -176,9 +208,12 @@ server <- function(input, output, session) {
         column.name <- get.column.name(data, input$time.statistic)
         data <- select(data, Year, Month, Label, one_of(column.name))
 
+        categories <- selected.categories()
+
         cat(file = stderr(), '\n\nPlotting time data\n')
         cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
         cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
+        cat(file = stderr(), '\ncategories:  ', categories, '\n')
         cat(file = stderr(), '\nhead(data): ', toString(head(data)), '\n')
         plot(seq(1, 10))
     })
