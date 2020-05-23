@@ -69,6 +69,20 @@ map.tab <- tabItem(
     ),
     fluidRow(
         column(
+            width = 8,
+            h3(textOutput('map.title')),
+            h4(textOutput('map.subtitle'))
+        )
+    ),
+    fluidRow(
+        column(
+            width = 8,
+            plotOutput('map'),
+        )
+    ),
+    br(),
+    fluidRow(
+        column(
             width = 4,
             selectizeInput(inputId = 'map.statistic',
                            label = 'Select the statistic to display',
@@ -83,20 +97,6 @@ map.tab <- tabItem(
                            selected = time.periods[length(time.periods)])
         )
     ),
-    fluidRow(
-        column(
-            width = 8,
-            h3(textOutput('map.title')),
-            h4(textOutput('map.subtitle'))
-        )
-    ),
-    fluidRow(
-        column(
-            width = 8,
-            plotOutput('map'),
-        )
-    ),
-    br(),
     fluidRow(
         column(
             width = 12,
@@ -117,6 +117,20 @@ time.tab <- tabItem(
     ),
     fluidRow(
         column(
+            width = 8,
+            h3(textOutput('time.title')),
+            h4(textOutput('time.subtitle'))
+        )
+    ),
+    fluidRow(
+        column(
+            width = 8,
+            plotOutput('time'),
+        )
+    ),
+    br(),
+    fluidRow(
+        column(
             width = 4,
             selectizeInput(inputId = 'state',
                            label = 'Select the US or a state',
@@ -132,27 +146,13 @@ time.tab <- tabItem(
         ),
         column(
             width = 4,
-            selectizeInput(inputId = 'category',
+            selectizeInput(inputId = 'categories',
                            label = 'Select one or more categories to display',
                            choices = curve.labels,
                            multiple = T,
                            selected = curve.labels[1])
         )
     ),
-    fluidRow(
-        column(
-            width = 8,
-            h3(textOutput('time.title')),
-            h4(textOutput('time.subtitle'))
-        )
-    ),
-    fluidRow(
-        column(
-            width = 8,
-            plotOutput('time'),
-        )
-    ),
-    br(),
     fluidRow(
         column(
             width = 12,

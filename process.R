@@ -1,3 +1,5 @@
+library(dplyr)
+
 # This file defines functions for processing the raw data to generate data
 # frames containing the values to be plotted.
 #
@@ -9,8 +11,6 @@
 #
 # This file also define a function to determine the set of curves that can be
 # plotted after the raw data has been processed.
-
-library(dplyr)
 
 # Bring the the function get.column.name into the current namespace.
 source('./global.R')
@@ -107,16 +107,26 @@ get.labeled.data <- function(data) {
     return(data)
 }
 
-find.OD.categories <- function(data, statistic.label) {
+find.available.categories <- function(data, statistic.label) {
     column.name <- get.column.name(data, statistic.label)
 
-    label.counts <- select(data, Year, Month, Label, one_of(column.name)) %>%
+    filtered.labels <- select(data, Year, Month, Label, one_of(column.name)) %>%
         na.omit() %>%
         group_by(Label) %>%
         summarise(count = n()) %>%
         filter(count >= 2)
 
-    return(label.counts[, 'Label', drop = T])
+    available.categories <- filtered.labels[, 'Label', drop = T]
+
+    # The categories that can be plotted will appear in a widget in the user
+    # interface.  The actual choices shown in the widget will be the element
+    # names rather than the elements of the vector.  In order to have
+    # descriptive choice labels rather than the shorter labels used in the
+    # database, we need to replace the elements in available.categories with
+    # corresponding named elements from the global variable curve.labels.
+    category.indices <- sort(match(available.categories, curve.labels))
+
+    return(curve.labels[category.indices])
 }
 
 process.time.data <- function(data) {

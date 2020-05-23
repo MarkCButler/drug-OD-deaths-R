@@ -1,7 +1,7 @@
 library(dplyr)
 library(DT)
+library(ggplot2)
 library(shiny)
-library(googleVis)
 
 source('./database.R')
 source('./process.R')
@@ -97,12 +97,11 @@ server <- function(input, output, session) {
         data <- select(data, State, one_of(column.name)) %>%
             na.omit()
 
-
         cat(file = stderr(), '\n\nPlotting map data\n')
-        cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
-        cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
-        cat(file = stderr(), '\ndata[, "State", drop = T]:  ', data[, 'State', drop = T], '\n')
-        cat(file = stderr(), '\ndata[, column.name, drop = T]:  ', data[, column.name, drop = T], '\n')
+        #cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
+        #cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
+        #cat(file = stderr(), '\ndata[, "State", drop = T]:  ', data[, 'State', drop = T], '\n')
+        #cat(file = stderr(), '\ndata[, column.name, drop = T]:  ', data[, column.name, drop = T], '\n')
 
         plot(data[, column.name, drop = T])
     })
@@ -150,17 +149,15 @@ server <- function(input, output, session) {
     available.categories <- reactive({
         cat(file = stderr(), '\n\nUpdating available.categories\n')
 
-        # The function find.OD.categories is defined in process.R.
-        categories <- find.OD.categories(time.data(), input$time.statistic)
-
-        # Order the categories based on their position in the full list, which
-        # is given by curve.labels.
-        categories <- categories[order(match(categories, curve.labels))]
-        categories
+        # The function find.available.categories is defined in process.R.
+        find.available.categories(time.data(), input$time.statistic)
     })
 
-    # Helper function to eliminate code repetition.
-    update.category.selection <- function(current.selection, new.categories) {
+    selected.categories <- reactive({
+        cat(file = stderr(), '\n\nUpdating the set of selected categories.\n')
+        current.selection <- input$categories
+        new.categories <- available.categories()
+
         # The selected choices should be the intersection of the previously
         # selected choices and the available categories, with order
         # corresponding to the previously selected values.
@@ -168,31 +165,28 @@ server <- function(input, output, session) {
         if (length(updated.selection) == 0) {
             updated.selection <- new.categories[1]
         } else {
-            new.selection.indices <- order(match(updated.selection, current.selection))
-            updated.selection <- updated.selection[new.selection.indices]
+            reordered.indices <- order(match(updated.selection, current.selection))
+            updated.selection <- updated.selection[reordered.indices]
         }
-        return(updated.selection)
-    }
-
-    selected.categories <- reactive({
-        cat(file = stderr(), '\n\nUpdating the set of selected categories.\n')
-        update.category.selection(input$category, available.categories())
+        cat(file = stderr(), '\nNew selection: ', updated.selection, '\n')
+        updated.selection
     })
 
     # Update the input widget that presents the user with a list of available
     # categories.  Since we do not want the widget updated each time the
-    # categories selected by the user change (i.e., when input$category
+    # categories selected by the user change (i.e., when input$categories
     # changes), we use observeEvent to update only when available.categories()
     # changes.
     observeEvent(available.categories(), {
         cat(file = stderr(), '\n\nUpdating widget that displays categories\n')
 
         categories <- available.categories()
-        selected.update <- update.category.selection(input$category, available.categories())
+        updated.selection <- selected.categories()
 
-        cat(file = stderr(), '\nNew categories:', toString(categories), '\n')
-        updateSelectizeInput(session, 'category', choices = categories,
-                             selected = selected.update, server = F)
+        cat(file = stderr(), '\nNew categories: ', categories, '\n')
+        cat(file = stderr(), '\nNew selection: ', updated.selection, '\n')
+        updateSelectizeInput(session, 'categories', choices = categories,
+                             selected = updated.selection, server = F)
     })
 
     output$time.title <- renderText({
@@ -204,17 +198,23 @@ server <- function(input, output, session) {
     })
 
     output$time <- renderPlot({
-        data <- time.data()
-        column.name <- get.column.name(data, input$time.statistic)
-        data <- select(data, Year, Month, Label, one_of(column.name))
-
         categories <- selected.categories()
 
+        data <- time.data()
+        column.name <- get.column.name(data, input$time.statistic)
+        data <- select(data, Year, Month, Label, one_of(column.name)) %>%
+            na.omit() %>%
+            filter(Label %in% categories) %>%
+            mutate(Date = convert.to.date(paste(Month, Year))) %>%
+            select(-Year, -Month)
+
+        p <- ggplot(data, aes_string(x = 'Date', y = column.name))
+
         cat(file = stderr(), '\n\nPlotting time data\n')
-        cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
-        cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
-        cat(file = stderr(), '\ncategories:  ', categories, '\n')
-        cat(file = stderr(), '\nhead(data): ', toString(head(data)), '\n')
+        #cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
+        #cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
+        #cat(file = stderr(), '\ncategories:  ', categories, '\n')
+        #cat(file = stderr(), '\nhead(data): ', toString(head(data)), '\n')
         plot(seq(1, 10))
     })
 
