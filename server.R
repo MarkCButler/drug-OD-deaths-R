@@ -1,6 +1,7 @@
 library(dplyr)
 library(DT)
 library(ggplot2)
+library(scales)
 library(shiny)
 
 source('./database.R')
@@ -98,10 +99,10 @@ server <- function(input, output, session) {
             na.omit()
 
         cat(file = stderr(), '\n\nPlotting map data\n')
-        #cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
-        #cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
-        #cat(file = stderr(), '\ndata[, "State", drop = T]:  ', data[, 'State', drop = T], '\n')
-        #cat(file = stderr(), '\ndata[, column.name, drop = T]:  ', data[, column.name, drop = T], '\n')
+        cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
+        cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
+        cat(file = stderr(), '\ndata[, "State", drop = T]:  ', data[, 'State', drop = T], '\n')
+        cat(file = stderr(), '\ndata[, column.name, drop = T]:  ', data[, column.name, drop = T], '\n')
 
         plot(data[, column.name, drop = T])
     })
@@ -111,7 +112,6 @@ server <- function(input, output, session) {
 
     # Reactive expression to fetch the data for the time-development tab.
     time.data <- eventReactive(input$state, {
-        cat(file = stderr(), '\n\nUpdating time data\n')
         data <- get.time.data(conn, input$state)
         process.time.data(data)
     })
@@ -147,14 +147,11 @@ server <- function(input, output, session) {
     # propagated from an update to the user widget.
 
     available.categories <- reactive({
-        cat(file = stderr(), '\n\nUpdating available.categories\n')
-
         # The function find.available.categories is defined in process.R.
         find.available.categories(time.data(), input$time.statistic)
     })
 
     selected.categories <- reactive({
-        cat(file = stderr(), '\n\nUpdating the set of selected categories.\n')
         current.selection <- input$categories
         new.categories <- available.categories()
 
@@ -168,7 +165,6 @@ server <- function(input, output, session) {
             reordered.indices <- order(match(updated.selection, current.selection))
             updated.selection <- updated.selection[reordered.indices]
         }
-        cat(file = stderr(), '\nNew selection: ', updated.selection, '\n')
         updated.selection
     })
 
@@ -178,13 +174,9 @@ server <- function(input, output, session) {
     # changes), we use observeEvent to update only when available.categories()
     # changes.
     observeEvent(available.categories(), {
-        cat(file = stderr(), '\n\nUpdating widget that displays categories\n')
-
         categories <- available.categories()
         updated.selection <- selected.categories()
 
-        cat(file = stderr(), '\nNew categories: ', categories, '\n')
-        cat(file = stderr(), '\nNew selection: ', updated.selection, '\n')
         updateSelectizeInput(session, 'categories', choices = categories,
                              selected = updated.selection, server = F)
     })
@@ -199,23 +191,31 @@ server <- function(input, output, session) {
 
     output$time <- renderPlot({
         categories <- selected.categories()
+        statistic.label <- input$time.statistic
 
         data <- time.data()
-        column.name <- get.column.name(data, input$time.statistic)
+        column.name <- get.column.name(data, statistic.label)
         data <- select(data, Year, Month, Label, one_of(column.name)) %>%
             na.omit() %>%
             filter(Label %in% categories) %>%
+            mutate(Label = long.curve.labels[Label]) %>%
             mutate(Date = convert.to.date(paste(Month, Year))) %>%
             select(-Year, -Month)
 
-        p <- ggplot(data, aes_string(x = 'Date', y = column.name))
+        # Reorder the legend.labels to match the order given in long.curve.labels.
+        legend.labels <- unique(data$Label)
+        reordered.indices <- order(match(legend.labels, long.curve.labels))
+        ordered.labels <- legend.labels[reordered.indices]
 
-        cat(file = stderr(), '\n\nPlotting time data\n')
-        #cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
-        #cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
-        #cat(file = stderr(), '\ncategories:  ', categories, '\n')
-        #cat(file = stderr(), '\nhead(data): ', toString(head(data)), '\n')
-        plot(seq(1, 10))
+        y.axis.label <- long.statistic.labels[statistic.label]
+        p <- ggplot(data, aes_string(x = 'Date', y = column.name, color = 'Label')) +
+            geom_line() +
+            geom_point() +
+            scale_color_discrete(name = 'Category', breaks = ordered.labels) +
+            scale_y_continuous(name = y.axis.label, labels = comma) +
+            theme_grey(base_size = 18)
+
+        p
     })
 
     ##########################################################################

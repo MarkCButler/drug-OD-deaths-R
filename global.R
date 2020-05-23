@@ -52,26 +52,29 @@ names(long.curve.labels) <- curve.labels
 
 # Choice of statistic for showing drug-overdose deaths.
 statistic.labels <- c('death.count', 'normalized.death.count', 'percent.change')
-names(statistic.labels) <- c('Number of deaths',
-                             'Number of deaths per 100,000 people',
-                             'Percent change from prior year')
+long.statistic.labels <- c('Number of deaths',
+                           'Deaths per 100,000 people',
+                           'Percent change in one year')
+names(statistic.labels) <- long.statistic.labels
+names(long.statistic.labels) <- statistic.labels
+
 # Character vectors used in plot titles for the map and time-development tabs
 # are defined here to facilitate keeping them consistent with the main
 # variable statistic.labels.  (For instance:  given an index in
 # statistic.labels, we want to extract the corresponding value from
-# map.titles.)
+# map.titles, so the two vectors need to be kept consistent.)
 map.titles <- c('Number of drug-overdose deaths',
                 'Number of drug-overdose deaths per 100,000 people',
                 'Percent change in drug-overdose deaths')
 time.titles <- c('Number of deaths',
                  'Number of deaths per 100,000 people',
-                 'Percent change during one year')
+                 'Percent change in one year')
 
 # After the data has been processed, the column names for the three different
 # choices of statistic are 'Value', 'Normalized.value', and 'Percent.change'.
-# Given a user selection for the stastic to display, we need to find the
-# corresponding column.  Rather than imposing a rigid correspondence between
-# the column names and the strings in the vector statistic.label, I use the
+# Given a user selection for the statistic to display, we need to find the
+# corresponding column.  Rather than imposing a rigid correspondence between the
+# column names and the strings in the vector statistic.label, define the
 # function get.column.name to handle the correspondence.
 get.column.name <- function(data, statistic.label) {
     if (statistic.label == 'normalized.death.count') {

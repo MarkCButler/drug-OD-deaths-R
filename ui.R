@@ -124,7 +124,7 @@ time.tab <- tabItem(
     ),
     fluidRow(
         column(
-            width = 8,
+            width = 10,
             plotOutput('time'),
         )
     ),
