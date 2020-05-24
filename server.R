@@ -1,11 +1,12 @@
 library(dplyr)
 library(DT)
-library(ggplot2)
-library(scales)
+library(plotly)
 library(shiny)
 
 source('./database.R')
+source('./plot.R')
 source('./process.R')
+source('./server_variables.R')
 
 server <- function(input, output, session) {
 
@@ -80,6 +81,7 @@ server <- function(input, output, session) {
         title <- map.titles[index]
         title
     })
+
     output$map.subtitle <- renderText({
         if (input$map.statistic == 'percent.change') {
             index <- match(input$period, time.periods)
@@ -185,37 +187,13 @@ server <- function(input, output, session) {
         index <- match(input$time.statistic, statistic.labels)
         title <- time.titles[index]
     })
+
     output$time.subtitle <- renderText({
         input$state
     })
 
     output$time <- renderPlot({
-        categories <- selected.categories()
-        statistic.label <- input$time.statistic
-
-        data <- time.data()
-        column.name <- get.column.name(data, statistic.label)
-        data <- select(data, Year, Month, Label, one_of(column.name)) %>%
-            na.omit() %>%
-            filter(Label %in% categories) %>%
-            mutate(Label = long.curve.labels[Label]) %>%
-            mutate(Date = convert.to.date(paste(Month, Year))) %>%
-            select(-Year, -Month)
-
-        # Reorder the legend.labels to match the order given in long.curve.labels.
-        legend.labels <- unique(data$Label)
-        reordered.indices <- order(match(legend.labels, long.curve.labels))
-        ordered.labels <- legend.labels[reordered.indices]
-
-        y.axis.label <- long.statistic.labels[statistic.label]
-        p <- ggplot(data, aes_string(x = 'Date', y = column.name, color = 'Label')) +
-            geom_line() +
-            geom_point() +
-            scale_color_discrete(name = 'Category', breaks = ordered.labels) +
-            scale_y_continuous(name = y.axis.label, labels = comma) +
-            theme_grey(base_size = 18)
-
-        p
+        generate.time.plot(time.data(), input$time.statistic, selected.categories())
     })
 
     ##########################################################################
@@ -231,10 +209,6 @@ server <- function(input, output, session) {
                 Indicator) %>%
         rename(`US / State` = State)
 
-    # For consistency with drug.OD.data, add a column 'US / State' to the
-    # population data to be displayed.
-    population.data <- cbind(`US / State` = rownames(population), population)
-
     output$table <- DT::renderDataTable({
         if (input$dataset == 'drug.OD.data') {
             table <- datatable(drug.OD.data, rownames = F)
@@ -246,23 +220,6 @@ server <- function(input, output, session) {
 
     ##########################################################################
     # Technical Notes tab
-
-    # Define the data frame that gives the correspondence between curve labels
-    # and ICD-10 codes for cause of death.  Note that the vector
-    # long.curve.labels is defined in global.R.
-    code.labels <- long.curve.labels[c('all.opioids',
-                                       'heroin',
-                                       'prescription.opioids',
-                                       'synthetic.opioids',
-                                       'cocaine',
-                                       'other.stimulants')]
-    codes <- c('T40.0-T40.4, T40.6',
-               'T40.1',
-               'T40.2',
-               'T40.3, T40.4',
-               'T40.5',
-               '43.6')
-    code.table <- data.frame(label = code.labels, codes)
 
     # Render the static table for the technical notes.
     output$code.table <- renderTable({code.table})

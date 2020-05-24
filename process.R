@@ -3,16 +3,17 @@ library(dplyr)
 # This file defines functions for processing the raw data to generate data
 # frames containing the values to be plotted.
 #
-# In particular, the raw data gives the number of deaths during one year in
-# each category, whereas the app gives the choice between three different
-# statistics:  number of deaths, number of deaths per unit of population, or
-# percent change from previous year.  The last two choices require additional
-# processing.
+# In particular, the raw data gives the number of deaths that occurred during
+# a year, whereas the app gives the choice between three different statistics:
+# number of deaths, number of deaths per unit of population, or percent change
+# from previous year.  The last two choices require additional processing.
 #
-# This file also define a function to determine the set of curves that can be
-# plotted after the raw data has been processed.
+# This file also define a function find.available.categories to determine the
+# set of drug-overdose categories that can be plotted given the selections
+# made by the user.
 
-# Bring the the function get.column.name into the current namespace.
+# Bring the the function get.column.name and the variable curve.labels into
+# the current namespace.
 source('./global.R')
 
 # Define functions for fetching data.
@@ -20,16 +21,19 @@ source('./database.R')
 
 # Define the functions that interpolate annual population estimates in order to
 # avoid spurious jumps in time-development plots.
-source('./time_series.R')
+source('./interpolate.R')
 
 # The unit used to normalize death count.
 unit.population <- 1e5
+
+# The first date for which data is available.
+dataset.start.date <- convert.to.date('January 2015')
 
 normalize.by.population <- function(data) {
     data['Population'] <- numeric(nrow(data))
     data <- mutate(data, Month.year = paste(Month, Year))
 
-    # The function get.population defined in time_series.R accepts a vector of
+    # The function get.population defined in interpolate.R accepts a vector of
     # dates but a single value for 'state' (which can be 'United States' or the
     # name of a state).  In the case of time-series data, there is only a single
     # value of 'state' in the data frame, so the interpolation can be done

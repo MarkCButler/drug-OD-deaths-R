@@ -1,8 +1,11 @@
 ###############################################################################
 # Data sources
 
-# The name of the csv file containing annual population estimates.
-population.csv <- './data/population.csv'
+# The population.csv file loaded here was created by manually modifying the
+# .xlsx file downloaded from www.census.gov.  The csv file contains population
+# estimates for the US and each of the 50 states.  For each of the years 2014
+# - 2019, there is an estimate of the population on July 1.
+population <- read.csv('./data/population.csv', row.names = 1, check.names = F)
 
 # The name of the database and table containing death counts due to drug
 # overdose.
@@ -40,11 +43,10 @@ long.curve.labels <- c('All drug overdose deaths',
 # as names for the vector curve.labels.
 names(curve.labels) <- long.curve.labels
 
-# The technical notes tab of the app includes a table giving the
-# correspondence between plot labels and ICD-10 codes for cause of death.  In
-# this context, it is helpful to have short, fixed names for the elements of
-# long.curve.labels, so that we can hard code the process of taking a
-# reordered subset of long.curve.labels to display in the table.
+# By naming the elements of long.curve.labels using the short labels in
+# curve.labels, we have the option of selecting the long labels (that may be
+# changed freely) using hard-coded short labels that do not change.  This is
+# done in multiple places in the app.
 names(long.curve.labels) <- curve.labels
 
 ###############################################################################
@@ -74,7 +76,7 @@ time.titles <- c('Number of deaths',
 # choices of statistic are 'Value', 'Normalized.value', and 'Percent.change'.
 # Given a user selection for the statistic to display, we need to find the
 # corresponding column.  Rather than imposing a rigid correspondence between the
-# column names and the strings in the vector statistic.label, define the
+# column names and the strings in the vector statistic.labels, define the
 # function get.column.name to handle the correspondence.
 get.column.name <- function(data, statistic.label) {
     if (statistic.label == 'normalized.death.count') {
@@ -104,7 +106,7 @@ time.periods <- paste('September', seq(from = 2015, to = 2019))
 state.labels <- append(c('United States'), state.name)
 
 ###############################################################################
-# Definitions needed for convenient handling of dates.
+# Function needed for convenient handling of dates.
 
 # In the data on deaths by drug OD, dates are given in the format 'January
 # 2015'.  Define a function for converting this format to a Date object.
@@ -113,6 +115,3 @@ convert.to.date <- function(month.year) {
                            format = '%d %B %Y')
     return(date.object)
 }
-
-# The first date for which data is available.
-dataset.start.date <- convert.to.date('January 2015')
