@@ -15,12 +15,38 @@ server <- function(input, output, session) {
     conn <- get.managed.connection(session)
 
     ##########################################################################
+    # Summary tab
+
+    # There are two plots in the summary tab that show time development of the
+    # opioid epidemic.  The same data frame US.time.data is used for both
+    # plots.  Note that since this data is fetched using the session-specific
+    # database connection, the definition of US.time.data cannot be moved
+    # outside of the server function.
+    US.time.data <- get.time.data(conn, 'United States') %>%
+            process.time.data()
+
+    output$opioid.epidemic <- renderPlot({
+        OD.categories <- c('all.drug.OD', 'prescription.opioids', 'synthetic.opioids',
+                           'heroin', 'cocaine', 'other.stimulants')
+        generate.time.plot(US.time.data, 'death.count', OD.categories)
+    })
+
+    output$growth.rate <- renderPlot({
+        opioid.categories <- c('all.opioids', 'prescription.opioids', 'synthetic.opioids', 'heroin')
+        generate.time.plot(US.time.data, 'percent.change', opioid.categories)
+    })
+
+    output$distribution <- renderPlotly({
+        data <- get.processed.map.data(conn, 'December 2017')
+        generate.map(data, 'normalized.death.count')
+    })
+
+    ##########################################################################
     # Map tab
 
     # Reactive expression to fetch map data when it needs to be refreshed.
     # The function get.processed.map.data is defined in process.R.
     map.data <- eventReactive(input$period, {
-        cat(file = stderr(), '\n\nUpdating map data\n')
         get.processed.map.data(conn, input$period)
     })
 

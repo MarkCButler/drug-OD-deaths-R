@@ -29,7 +29,7 @@ curve.labels <- c('all.drug.OD',
                   'heroin',
                   'cocaine',
                   'other.stimulants')
-long.curve.labels <- c('All drug overdose deaths',
+long.curve.labels <- c('All drug-overdose deaths',
                        'All opioids',
                        'Prescription opioid pain relievers',
                        'Fentanyl and other synthetic opioids',
@@ -68,8 +68,8 @@ names(long.statistic.labels) <- statistic.labels
 map.titles <- c('Number of drug-overdose deaths',
                 'Number of drug-overdose deaths per 100,000 people',
                 'Percent change in drug-overdose deaths')
-time.titles <- c('Number of deaths',
-                 'Number of deaths per 100,000 people',
+time.titles <- c('Number of deaths, preceding 12-month period',
+                 'Number of deaths per 100,000 people, preceding 12-month period',
                  'Percent change in one year')
 colorbar.titles <- c('Number of deaths',
                      'Deaths per\n100,000 people',

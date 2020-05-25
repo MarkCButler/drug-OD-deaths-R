@@ -36,14 +36,63 @@ summary.tab <-  tabItem(
     fluidRow(
         column(
             width = 12,
-            h1('Drug overdose deaths in the US')
+            h1('The Opioid Epidemic')
         ),
     ),
     fluidRow(
         column(
-            width = 12,
-            h2('Place holder for plots')
-        ),
+            width = 10,
+            h4('The death rate in the US due to opioid overdose increased by almost a factor of six ',
+               'between 1997 and 2017 [1].  Even though the overall number of drug-overdose deaths ',
+               'has stabilized, the number of deaths due to synthetic opioids such as fentanyl ',
+               'is still climbing.  (See the first plot below.)  There are signs of progress, ',
+               'however.  In the second plot below, the downward slopes on the right side of the plot ',
+               'show deceleration in growth of the death rate.  The map at the bottom of the ',
+               'page shows the disturbing regional concentration in the per capita death rate ',
+               'in 2017, when the overall number of drug-overdose deaths peaked.'
+               ),
+            p('[1] Sarah DeWeerdt, "Tracing the US opioid crisis to its roots", Nature 573, ',
+              'S10-S12 (2019)')
+        )
+    ),
+    fluidRow(
+        column(
+            width = 8,
+            h3('Drug-overdose deaths in the US'),
+            h4('Each data point represents the number of deaths during the preceding 12-month period.')
+        )
+    ),
+    fluidRow(
+        column(
+            width = 10,
+            plotOutput('opioid.epidemic'),
+        )
+    ),
+    br(),
+    fluidRow(
+        column(
+            width = 8,
+            h3('Growth rate of the epidemic'),
+        )
+    ),
+    fluidRow(
+        column(
+            width = 10,
+            plotOutput('growth.rate'),
+        )
+    ),
+    fluidRow(
+        column(
+            width = 10,
+            h3('Regional distribution in 2017'),
+            h4('Number of drug-overdose deaths per 100,000 people')
+        )
+    ),
+    fluidRow(
+        column(
+            width = 10,
+            plotlyOutput('distribution'),
+        )
     ),
     br(),
     fluidRow(
@@ -65,7 +114,7 @@ map.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            h1('Drug overdose deaths in the US')
+            h1('Drug-Overdose Deaths in the US')
         )
     ),
     fluidRow(
@@ -113,7 +162,7 @@ time.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            h1('Time development by category')
+            h1('Time Development by Category')
         ),
     ),
     fluidRow(
@@ -197,7 +246,7 @@ notes.tab <- tabItem(
     fluidRow(
         column(
             width = 12,
-            h1('Technical notes')
+            h1('Technical Notes')
         ),
     ),
     fluidRow(
