@@ -71,6 +71,10 @@ map.titles <- c('Number of drug-overdose deaths',
 time.titles <- c('Number of deaths',
                  'Number of deaths per 100,000 people',
                  'Percent change in one year')
+colorbar.titles <- c('Number of deaths',
+                     'Deaths per\n100,000 people',
+                     'Percent change\nin one year')
+names(colorbar.titles) <- statistic.labels
 
 # After the data has been processed, the column names for the three different
 # choices of statistic are 'Value', 'Normalized.value', and 'Percent.change'.

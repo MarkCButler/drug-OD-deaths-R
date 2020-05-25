@@ -94,19 +94,8 @@ server <- function(input, output, session) {
         subtitle
     })
 
-    output$map <- renderPlot({
-        data <- map.data()
-        column.name <- get.column.name(data, input$map.statistic)
-        data <- select(data, State, one_of(column.name)) %>%
-            na.omit()
-
-        cat(file = stderr(), '\n\nPlotting map data\n')
-        cat(file = stderr(), '\nnrow(data): ', nrow(data), '\n')
-        cat(file = stderr(), '\ncolnames(data): ', colnames(data), '\n')
-        cat(file = stderr(), '\ndata[, "State", drop = T]:  ', data[, 'State', drop = T], '\n')
-        cat(file = stderr(), '\ndata[, column.name, drop = T]:  ', data[, column.name, drop = T], '\n')
-
-        plot(data[, column.name, drop = T])
+    output$map <- renderPlotly({
+        generate.map(map.data(), input$map.statistic)
     })
 
     ##########################################################################
@@ -192,7 +181,7 @@ server <- function(input, output, session) {
         input$state
     })
 
-    output$time <- renderPlot({
+    output$time.plot <- renderPlot({
         generate.time.plot(time.data(), input$time.statistic, selected.categories())
     })
 

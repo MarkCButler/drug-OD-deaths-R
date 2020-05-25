@@ -12,8 +12,8 @@ library(dplyr)
 # set of drug-overdose categories that can be plotted given the selections
 # made by the user.
 
-# Bring the the function get.column.name and the variable curve.labels into
-# the current namespace.
+# Bring the the functions get.column.name, convert.to.date and the variable
+# curve.labels into the current namespace.
 source('./global.R')
 
 # Define functions for fetching data.
@@ -67,14 +67,12 @@ get.processed.map.data <- function(conn, month.year) {
 
     # Fetch and process map data for the selected month / year combination.  The
     # call to normalize.by.population adds a column Normalized.value giving the
-    # number of deaths per unit population, For the map data (which is seen when
-    # the user scans over the map with the mouse), we round this new column.
+    # number of deaths per unit population.
     month.year.split <- unlist(strsplit(month.year, ' '))
     month <- month.year.split[1]
     year <- month.year.split[2]
     data <- get.map.data(conn, year, month) %>%
-        normalize.by.population() %>%
-        mutate(Normalized.value = round(Normalized.value, 1))
+        normalize.by.population()
 
     # If possible get data from the prior year.
     prior.year <- as.character(as.numeric(year) - 1)
@@ -90,7 +88,7 @@ get.processed.map.data <- function(conn, month.year) {
         data.prior.year <- rename(data.prior.year, Prior.year = Year, Prior.value = Value) %>%
             mutate(Year = Prior.year + 1)
         data <- inner_join(data, data.prior.year, by = c('State', 'Month', 'Year')) %>%
-            mutate(Percent.change = round((Value - Prior.value) / Prior.value * 100, 1)) %>%
+            mutate(Percent.change = (Value - Prior.value) / Prior.value) %>%
             select(-Prior.year, -Prior.value)
     }
 
@@ -143,7 +141,7 @@ process.time.data <- function(data) {
         mutate(Year = Prior.year + 1) %>%
         select(-Normalized.value)
     data <- left_join(data, data.prior.year, by = c('State', 'Month', 'Year', 'Label')) %>%
-        mutate(Percent.change = (Value - Prior.value) / Prior.value * 100) %>%
+        mutate(Percent.change = (Value - Prior.value) / Prior.value) %>%
         select(-Prior.year, -Prior.value)
 
     return(data)

@@ -1,3 +1,4 @@
+library(plotly)
 library(shinydashboard)
 
 ############################
@@ -76,8 +77,8 @@ map.tab <- tabItem(
     ),
     fluidRow(
         column(
-            width = 8,
-            plotOutput('map'),
+            width = 10,
+            plotlyOutput('map'),
         )
     ),
     br(),
@@ -125,7 +126,7 @@ time.tab <- tabItem(
     fluidRow(
         column(
             width = 10,
-            plotOutput('time'),
+            plotOutput('time.plot'),
         )
     ),
     br(),
