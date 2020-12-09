@@ -104,8 +104,7 @@ get.processed.map.data <- function(conn, month.year) {
 # raw data.
 get.labeled.data <- function(data) {
     data <- group_by_at(data, vars(-Value)) %>%
-        summarise(Value = sum(Value)) %>%
-        ungroup()
+        summarise(Value = sum(Value), .groups = 'drop')
     return(data)
 }
 
@@ -115,7 +114,7 @@ find.available.categories <- function(data, statistic.label) {
     filtered.labels <- select(data, Year, Month, Label, one_of(column.name)) %>%
         na.omit() %>%
         group_by(Label) %>%
-        summarise(count = n()) %>%
+        summarise(count = n(), .groups = 'drop') %>%
         filter(count >= 2)
 
     available.categories <- filtered.labels[, 'Label', drop = T]
