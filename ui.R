@@ -30,7 +30,7 @@ sidebar <- dashboardSidebar(
 
 data.source.deaths <- 'https://data.cdc.gov/NCHS/VSRR-Provisional-Drug-Overdose-Death-Counts/xkb8-kh2a'
 data.source.pop <- 'https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html'
-source.code <- 'https://github.com/MarkCButler/drug-OD-deaths-app'
+source.code <- 'https://github.com/MarkCButler/drug-OD-deaths-R'
 summary.tab <-  tabItem(
     tabName = 'summary',
     fluidRow(
