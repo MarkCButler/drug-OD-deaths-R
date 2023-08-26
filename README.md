@@ -5,9 +5,10 @@ drug-overdose deaths in the US.  The app is hosted at
 
 https://markcbutler.shinyapps.io/drug-od-deaths/
 
-Note that a similar web app implemented in Python is available at the repo
+Note that a more recent version of this web app, implemented in Python and
+JavaScript, is available at the repo
 
-https://github.com/MarkCButler/drug-OD-deaths-Python
+https://github.com/MarkCButler/drug-OD-deaths
 
 The
 [data on drug-overdose deaths](https://data.cdc.gov/NCHS/VSRR-Provisional-Drug-Overdose-Death-Counts/xkb8-kh2a),
